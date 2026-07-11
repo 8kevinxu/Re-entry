@@ -3,6 +3,8 @@
 // Runs on plain Node ≥ 23.6 (native type stripping). Data: ~/.re-entry.
 
 import readline from "node:readline";
+import { fileURLToPath } from "node:url";
+import { installNudge, isGitRepo, uninstallNudge } from "./hook.ts";
 import {
   SECTION_TITLES,
   type BriefingSections,
@@ -12,6 +14,9 @@ import {
   createBriefing,
   createProject,
   dataDir,
+  expandHome,
+  findProjectByPath,
+  getProject,
   listBriefings,
   listProjects,
   readBriefing,
@@ -40,6 +45,15 @@ function lastActivity(project: Project): string {
 }
 
 function resolve(query: string): Project {
+  if (!query) {
+    // No name given: match the project whose pile contains the cwd.
+    const here = findProjectByPath(process.cwd());
+    if (here) return here;
+    console.error(
+      "No project here — no pile link contains this directory.\nName one instead, or see `reentry list`."
+    );
+    process.exit(1);
+  }
   const projects = listProjects().filter((p) => !p.archived);
   const q = query.toLowerCase();
   const exact = projects.find((p) => p.slug === q);
@@ -260,6 +274,55 @@ function find(query: string): void {
   }
 }
 
+function localRepos(project: Project): string[] {
+  return project.links
+    .filter((link) => /^[/~]/.test(link.url))
+    .map((link) => expandHome(link.url))
+    .filter(isGitRepo);
+}
+
+function hook(query: string, install: boolean): void {
+  const project = resolve(query);
+  const repos = localRepos(project);
+  if (repos.length === 0) {
+    console.error(
+      `${project.name} has no local git repos in its pile — add the repo path as a link first.`
+    );
+    process.exit(1);
+  }
+  for (const repo of repos) {
+    if (install) {
+      const cliPath = fileURLToPath(import.meta.url);
+      const result = installNudge(repo, project.slug, cliPath);
+      console.log(`${repo}: ${result}`);
+      if (result === "installed") {
+        console.log(
+          dim(`  After each \`git push\` there, a one-line reminder will suggest\n  writing a letter if the last one is over a day old.`)
+        );
+      }
+    } else {
+      console.log(`${repo}: ${uninstallNudge(repo) ? "removed" : "no nudge found"}`);
+    }
+  }
+}
+
+const NUDGE_AFTER_HOURS = 24;
+
+function nudge(slug: string): void {
+  const project = getProject(slug);
+  if (!project || project.archived) return;
+  const [latest] = listBriefings(project.slug);
+  if (latest) {
+    const hours = (Date.now() - new Date(latest.writtenAt).getTime()) / 3_600_000;
+    if (hours < NUDGE_AFTER_HOURS) return;
+  }
+  const age = latest ? `is ${awayFor(latest.writtenAt)} old` : "was never written";
+  console.log(
+    `✉ re-entry: your last letter for ${project.name} ${age}.` +
+      ` Stepping away? → reentry leave ${project.slug}`
+  );
+}
+
 function newProject(name: string): void {
   if (!name.trim()) {
     console.error("Usage: reentry new <name>");
@@ -274,13 +337,16 @@ function help(): void {
   console.log(`
   ${bold("reentry")} — come back to a letter, not a pile.
 
-  reentry                 list projects by time away
-  reentry back <project>  read the latest letter
-  reentry leave <project> write one — six questions, sixty seconds
-  reentry find <words>    search every letter
-  reentry new <name>      start a new project
+  reentry                  list projects by time away
+  reentry back [project]   read the latest letter
+  reentry leave [project]  write one — six questions, sixty seconds
+  reentry find <words>     search every letter
+  reentry new <name>       start a new project
+  reentry hook [project]   nudge after \`git push\` in the project's repos
+  reentry unhook [project] remove the nudge
 
-  Projects match by slug or any part of the name.
+  Projects match by slug or any part of the name. With no name, back /
+  leave / hook use whichever project's pile contains this directory.
   Letters are plain markdown in ${dataDir()}.
 `);
 }
@@ -292,18 +358,19 @@ switch (command) {
     list();
     break;
   case "back":
-    if (!args[0]) {
-      console.error("Usage: reentry back <project>");
-      process.exit(1);
-    }
     back(args.join(" "));
     break;
   case "leave":
-    if (!args[0]) {
-      console.error("Usage: reentry leave <project>");
-      process.exit(1);
-    }
     await leave(args.join(" "));
+    break;
+  case "hook":
+    hook(args.join(" "), true);
+    break;
+  case "unhook":
+    hook(args.join(" "), false);
+    break;
+  case "nudge":
+    nudge(args[0] ?? "");
     break;
   case "find":
     if (!args[0]) {

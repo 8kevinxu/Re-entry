@@ -170,6 +170,54 @@ export function readBriefing(slug: string, id: string): Briefing | null {
   return { id, writtenAt, sections };
 }
 
+export function expandHome(p: string): string {
+  return p.replace(/^~(?=\/|$)/, os.homedir());
+}
+
+/**
+ * Resolve symlinks (macOS /tmp → /private/tmp) so path comparisons hold.
+ * For paths that don't exist, canonicalize the nearest existing ancestor.
+ */
+function canonical(p: string): string {
+  let dir = path.resolve(p);
+  let suffix = "";
+  for (;;) {
+    try {
+      return path.join(fs.realpathSync(dir), suffix);
+    } catch {
+      const parent = path.dirname(dir);
+      if (parent === dir) return path.join(dir, suffix);
+      suffix = path.join(path.basename(dir), suffix);
+      dir = parent;
+    }
+  }
+}
+
+/**
+ * The project whose local pile links contain `absPath` (e.g. the cwd).
+ * The deepest matching link wins if several projects claim a parent dir.
+ */
+export function findProjectByPath(absPath: string): Project | null {
+  const target = canonical(absPath);
+  let best: Project | null = null;
+  let bestLength = -1;
+  for (const project of listProjects()) {
+    if (project.archived) continue;
+    for (const link of project.links) {
+      if (!/^[/~]/.test(link.url)) continue;
+      const dir = canonical(expandHome(link.url));
+      if (
+        (target === dir || target.startsWith(dir + path.sep)) &&
+        dir.length > bestLength
+      ) {
+        best = project;
+        bestLength = dir.length;
+      }
+    }
+  }
+  return best;
+}
+
 export function deleteBriefing(slug: string, id: string): boolean {
   if (!/^[\w.-]+$/.test(id)) return false;
   const file = path.join(briefingsDir(slug), `${id}.md`);
@@ -221,7 +269,7 @@ export function gitSnapshot(links: ProjectLink[]): string {
   const lines: string[] = [];
   for (const link of links) {
     if (!/^[/~]/.test(link.url)) continue;
-    const cwd = link.url.replace(/^~(?=\/|$)/, os.homedir());
+    const cwd = expandHome(link.url);
     try {
       const git = (...args: string[]) =>
         execFileSync("git", ["-C", cwd, ...args], {

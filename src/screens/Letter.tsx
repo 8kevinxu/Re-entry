@@ -61,9 +61,17 @@ export function Letter({
 
       <header className="project-header">
         <h1 className="screen-title">{project.name}</h1>
-        <a className="button primary" href={leaveHref}>
-          I'm stepping away
-        </a>
+        <div className="project-actions">
+          <a
+            className="button subtle"
+            href={`#/p/${encodeURIComponent(slug)}/edit`}
+          >
+            Edit
+          </a>
+          <a className="button primary" href={leaveHref}>
+            I'm stepping away
+          </a>
+        </div>
       </header>
 
       {project.links.length > 0 && (

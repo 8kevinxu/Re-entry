@@ -356,6 +356,12 @@ textarea:focus {
   margin-bottom: 0.5rem;
 }
 
+.project-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
 .pile {
   display: flex;
   flex-wrap: wrap;

@@ -58,15 +58,33 @@ TypeScript natively):
 
 ```sh
 npm run reentry                        # list projects by time away
-npm run reentry -- back <project>     # read the latest letter
-npm run reentry -- leave <project>    # write one — six questions
+npm run reentry -- back [project]     # read the latest letter
+npm run reentry -- leave [project]    # write one — six questions
 npm run reentry -- find <words>       # search every letter
 npm run reentry -- new <name>         # start a new project
+npm run reentry -- hook [project]     # nudge after `git push` (see below)
+npm run reentry -- unhook [project]   # remove the nudge
 ```
 
 Or `npm link` once, and it's just `reentry`, `reentry back hoopmap`, etc.
-Projects match by slug or any part of the name. The CLI and the web app share
-the same files, so use whichever is closer at hand.
+Projects match by slug or any part of the name — and with no name at all,
+`back`, `leave`, and `hook` use whichever project's pile contains the
+directory you're standing in. The CLI and the web app share the same files,
+so use whichever is closer at hand.
+
+### The nudge
+
+The ritual only helps if something reminds you at the moment of leaving.
+`reentry hook` installs a `pre-push` git hook (opt-in, per repo, removable
+with `reentry unhook`) into the project's local repositories. After that,
+pushing — often the last act before stepping away — prints a single line if
+your latest letter is more than a day old:
+
+```
+✉ re-entry: your last letter for RECreate is 3 days old. Stepping away? → reentry leave recreate
+```
+
+It never blocks a push, and it stays quiet when your letter is fresh.
 
 ## Tests
 

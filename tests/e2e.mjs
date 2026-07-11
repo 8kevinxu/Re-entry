@@ -117,6 +117,31 @@ try {
   const nextAfter = await page.$eval(".next-move-body", (el) => el.textContent);
   check("deleting the latest falls back to the previous letter", nextAfter.includes("Verify the P.S."));
 
+  // --- 6. Edit project: rename and grow the pile ------------------------------
+  await page.goto(`${BASE}/#/p/dogfood/edit`, { waitUntil: "networkidle0" });
+  await page.waitForSelector("input");
+  await page.$eval("input", (el) => {
+    el.focus();
+    el.select();
+  });
+  await page.keyboard.type("Dogfood Renamed");
+  await page.type(".link-row input:first-child", "Docs");
+  await page.type(".link-row input:last-child", "https://example.com/docs");
+  await page.click(".button.primary");
+  await page.waitForSelector(".pile a", { timeout: 3000 });
+  const pileLink = await page.$eval(".pile a", (el) => el.textContent);
+  const title = await page.$eval(".screen-title", (el) => el.textContent);
+  check("edit saves a new name", title === "Dogfood Renamed");
+  check("edit saves a new pile link", pileLink === "Docs");
+
+  // --- 7. "/" focuses dashboard search ----------------------------------------
+  await page.goto(`${BASE}/#/`, { waitUntil: "networkidle0" });
+  await page.keyboard.press("/");
+  const focused = await page.evaluate(
+    () => document.activeElement?.className ?? ""
+  );
+  check('"/" focuses the search box', focused.includes("search"));
+
   await browser.close();
 } finally {
   server.kill();

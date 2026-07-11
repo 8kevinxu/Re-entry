@@ -193,6 +193,26 @@ test("deleteBriefing removes the file and nothing else", () => {
   assert.equal(store.deleteBriefing(project.slug, "../project"), false);
 });
 
+test("findProjectByPath matches cwd to the deepest local link", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "re-entry-cwd-"));
+  const outer = path.join(base, "code");
+  const inner = path.join(base, "code", "app");
+  fs.mkdirSync(inner, { recursive: true });
+  store.createProject("Outer Proj", [{ label: "Code", url: outer }]);
+  const innerProject = store.createProject("Inner Proj", [
+    { label: "Code", url: inner },
+  ]);
+  assert.equal(store.findProjectByPath(inner)?.name, "Inner Proj");
+  assert.equal(
+    store.findProjectByPath(path.join(inner, "src", "deep"))?.name,
+    "Inner Proj"
+  );
+  assert.equal(store.findProjectByPath(outer)?.name, "Outer Proj");
+  assert.equal(store.findProjectByPath("/nowhere/near"), null);
+  store.updateProject(innerProject.slug, { archived: true });
+  assert.equal(store.findProjectByPath(inner)?.name, "Outer Proj");
+});
+
 test("listProjects sees everything created", () => {
   const slugs = store.listProjects().map((p) => p.slug);
   assert.ok(slugs.includes("round-trip"));

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProjectListing, SearchHit } from "../../shared/types";
 import { SECTION_TITLES } from "../../shared/types";
 import { api } from "../api";
@@ -10,9 +10,26 @@ export function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api.listProjects().then(setProjects, (e) => setError(e.message));
+  }, []);
+
+  // "/" focuses search, like everywhere else on the internet.
+  useEffect(() => {
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey) return;
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      )
+        return;
+      event.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   useEffect(() => {
@@ -68,9 +85,10 @@ export function Dashboard() {
       ) : (
         <>
           <input
+            ref={searchRef}
             className="search"
             type="search"
-            placeholder="Search projects and letters…"
+            placeholder="Search projects and letters…  ( / )"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
