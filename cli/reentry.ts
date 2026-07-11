@@ -328,9 +328,17 @@ function newProject(name: string): void {
     console.error("Usage: reentry new <name>");
     process.exit(1);
   }
-  const project = createProject(name, []);
+  // Run from inside a git repo, the repo joins the pile automatically —
+  // which also powers cwd detection and the sealed-letter code snapshot.
+  const cwd = process.cwd();
+  const links = isGitRepo(cwd) ? [{ label: "Code", url: cwd }] : [];
+  const project = createProject(name, links);
   console.log(`Created ${bold(project.name)} (${project.slug}) in ${dataDir()}.`);
-  console.log(`Add links to the pile in the web app, or just get to work.`);
+  if (links.length > 0) {
+    console.log(`Linked this repo to the pile: ${cwd}`);
+  } else {
+    console.log(`Add links to the pile in the web app, or just get to work.`);
+  }
 }
 
 function help(): void {

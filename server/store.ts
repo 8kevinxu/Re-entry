@@ -218,11 +218,14 @@ export function findProjectByPath(absPath: string): Project | null {
   return best;
 }
 
+/** Deleting a letter moves it to the trash — letters are too precious to unlink. */
 export function deleteBriefing(slug: string, id: string): boolean {
   if (!/^[\w.-]+$/.test(id)) return false;
   const file = path.join(briefingsDir(slug), `${id}.md`);
   if (!fs.existsSync(file)) return false;
-  fs.unlinkSync(file);
+  const trash = path.join(dataDir(), "trash");
+  fs.mkdirSync(trash, { recursive: true });
+  fs.renameSync(file, path.join(trash, `${slug}--${id}.md`));
   return true;
 }
 

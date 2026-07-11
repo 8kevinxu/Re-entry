@@ -595,6 +595,27 @@ textarea:focus {
   margin: 0 0 0.6rem;
 }
 
+.echo {
+  margin: 0 0 1.1rem;
+  padding: 0.55rem 1rem;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.98rem;
+}
+
+.echo-label {
+  display: block;
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.15rem;
+}
+
 .ritual textarea {
   font-family: var(--serif);
   font-size: 1.15rem;

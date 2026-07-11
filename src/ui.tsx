@@ -1,9 +1,28 @@
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import type { ProjectLink } from "../shared/types";
+
+/** Turn bare http(s) URLs inside a line into links, leaving punctuation behind. */
+function linkify(line: string): ReactNode[] {
+  return line.split(/(https?:\/\/\S+)/g).map((part, i) => {
+    if (i % 2 === 0) return part;
+    const url = part.replace(/[.,;:!?)»›”"']+$/, "");
+    const tail = part.slice(url.length);
+    return (
+      <span key={i}>
+        <a href={url} target="_blank" rel="noreferrer">
+          {url}
+        </a>
+        {tail}
+      </span>
+    );
+  });
+}
 
 /**
  * Render free text as paragraphs, preserving single line breaks.
  * A block whose lines all start with "- " or "* " becomes a list.
+ * Bare URLs become links.
  */
 export function Prose({ text }: { text: string }) {
   const blocks = text.split(/\n{2,}/).filter((block) => block.trim() !== "");
@@ -15,7 +34,7 @@ export function Prose({ text }: { text: string }) {
           return (
             <ul key={i}>
               {lines.map((line, j) => (
-                <li key={j}>{line.replace(/^\s*[-*]\s+/, "")}</li>
+                <li key={j}>{linkify(line.replace(/^\s*[-*]\s+/, ""))}</li>
               ))}
             </ul>
           );
@@ -25,7 +44,7 @@ export function Prose({ text }: { text: string }) {
             {block.split("\n").map((line, j) => (
               <span key={j}>
                 {j > 0 && <br />}
-                {line}
+                {linkify(line)}
               </span>
             ))}
           </p>

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import type { BriefingSections } from "../../shared/types";
+import type { Briefing, BriefingSections } from "../../shared/types";
 import { api } from "../api";
+import { writtenAgo } from "../time";
+import { firstLine } from "../ui";
 
 interface Step {
   key: keyof BriefingSections;
@@ -80,7 +82,17 @@ export function Ritual({ slug }: { slug: string }) {
   const [error, setError] = useState<string | null>(null);
   const [sealed, setSealed] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [previous, setPrevious] = useState<Briefing | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // The last letter echoes into this one: past next-move while you describe
+  // the present, past open questions while you list the new ones.
+  useEffect(() => {
+    api.getProject(slug).then(
+      (detail) => setPrevious(detail.latest),
+      () => setPrevious(null)
+    );
+  }, [slug]);
 
   useEffect(() => {
     const started = Date.now();
@@ -245,6 +257,25 @@ export function Ritual({ slug }: { slug: string }) {
           {current.hint}
           {!current.required && " Press Enter to skip."}
         </p>
+
+        {previous && current.key === "standNow" && previous.sections.nextMove && (
+          <blockquote className="echo">
+            <span className="echo-label">
+              {writtenAgo(previous.writtenAt)}, the next move was
+            </span>
+            “{firstLine(previous.sections.nextMove)}”
+          </blockquote>
+        )}
+        {previous &&
+          current.key === "openQuestions" &&
+          previous.sections.openQuestions && (
+            <blockquote className="echo">
+              <span className="echo-label">
+                {writtenAgo(previous.writtenAt)}, you wondered
+              </span>
+              “{firstLine(previous.sections.openQuestions)}”
+            </blockquote>
+          )}
 
         <textarea
           ref={textareaRef}

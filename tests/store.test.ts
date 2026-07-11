@@ -175,6 +175,19 @@ test("searchBriefings trims long snippets around the match", () => {
   assert.ok(hit.snippet.endsWith("…"));
 });
 
+test("deleteBriefing moves the letter to the trash", () => {
+  const project = store.createProject("Trashable", []);
+  const created = store.createBriefing(project.slug, { standNow: "s", nextMove: "n" });
+  assert.equal(store.deleteBriefing(project.slug, created.id), true);
+  const trashed = path.join(
+    store.dataDir(),
+    "trash",
+    `${project.slug}--${created.id}.md`
+  );
+  assert.ok(fs.existsSync(trashed));
+  assert.ok(fs.readFileSync(trashed, "utf8").includes("## Where things stand"));
+});
+
 test("deleteBriefing removes the file and nothing else", () => {
   const project = store.createProject("Deletable", []);
   const first = store.createBriefing(project.slug, { standNow: "1", nextMove: "1" });

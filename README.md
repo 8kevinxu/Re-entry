@@ -24,7 +24,12 @@ one question per screen, keyboard-first:
 At the end you read the whole letter back before sealing it. Answers are kept
 as a local draft until then, so a stray reload loses nothing. Everything is
 searchable later — from the dashboard or `reentry find <words>` — and a
-mis-sealed letter can be deleted from its page.
+mis-sealed letter can be deleted from its page (it moves to
+`~/.re-entry/trash/`, never destroyed).
+
+The letters talk to each other: while you write *where things stand*, the
+ritual shows what your last letter said the next move was; while you list
+*open questions*, it shows what you wondered last time.
 
 **When you come back**, you don't face the pile. You're greeted by that
 briefing, rendered as a letter from past-you — with the next move front and

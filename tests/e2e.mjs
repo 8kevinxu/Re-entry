@@ -71,9 +71,17 @@ try {
   const markCount = await page.$$eval("mark", (els) => els.length);
   check("search highlights the match", markCount > 0);
 
-  // --- 2. Ritual: draft survives reload --------------------------------------
+  // --- 2. Ritual: previous letter echoes into the first question -------------
   await page.goto(`${BASE}/#/p/dogfood/leave`, { waitUntil: "networkidle0" });
   await page.waitForSelector("textarea");
+  await page.waitForSelector(".echo", { timeout: 3000 });
+  const echo = await page.$eval(".echo", (el) => el.textContent);
+  check(
+    "ritual echoes the previous letter's next move",
+    echo.includes("Verify the P.S. renders")
+  );
+
+  // --- 2b. Draft survives reload ----------------------------------------------
   await page.type("textarea", "Draft answer that must survive a reload");
   await pause(300);
   await page.reload({ waitUntil: "networkidle0" });
