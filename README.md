@@ -77,6 +77,7 @@ npm run reentry -- find <words>       # search every letter
 npm run reentry -- new <name>         # start a new project
 npm run reentry -- open [project]     # jump to the web app (starts the server)
 npm run reentry -- sync               # git-commit your letters; push if origin set
+npm run reentry -- status             # terse "✉ 3 days" for shell prompts
 npm run reentry -- hook [project]     # nudge after `git push` (see below)
 npm run reentry -- unhook [project]   # remove the nudge
 ```

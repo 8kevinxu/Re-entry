@@ -207,8 +207,29 @@ export function Dashboard() {
               </ul>
             </details>
           )}
+
+          {!searching && <StatLine projects={projects} />}
         </>
       )}
     </div>
+  );
+}
+
+function StatLine({ projects }: { projects: ProjectListing[] }) {
+  const letters = projects.reduce((sum, p) => sum + p.letterCount, 0);
+  if (letters === 0) return null;
+  const since = projects
+    .map((p) => p.firstWrittenAt)
+    .filter((d): d is string => d !== null)
+    .sort()[0];
+  const sinceLabel = new Date(since).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
+  return (
+    <p className="stat-line">
+      {letters} {letters === 1 ? "letter" : "letters"} across {projects.length}{" "}
+      {projects.length === 1 ? "project" : "projects"} · writing since {sinceLabel}
+    </p>
   );
 }

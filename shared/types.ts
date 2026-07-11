@@ -47,6 +47,8 @@ export interface SearchHit {
 /** Dashboard listing: project plus a glimpse of its latest briefing. */
 export interface ProjectListing extends Project {
   lastBriefing: { id: string; writtenAt: string; nextMove: string } | null;
+  letterCount: number;
+  firstWrittenAt: string | null;
 }
 
 /** Full project detail for the return view. */

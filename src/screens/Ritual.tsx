@@ -176,11 +176,14 @@ export function Ritual({ slug }: { slug: string }) {
   }
 
   if (sealed) {
+    const seconds = Math.round(elapsed);
     return (
       <div className="page ritual sealed">
         <div className="seal-mark">✉</div>
         <h1 className="seal-title">Letter sealed.</h1>
-        <p className="seal-sub">See you when you get back.</p>
+        <p className="seal-sub">
+          {seconds <= 120 && `In ${seconds} seconds. `}See you when you get back.
+        </p>
         <a className="button" href="#/">Back to your projects</a>
       </div>
     );

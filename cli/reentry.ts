@@ -354,6 +354,14 @@ function nudge(slug: string): void {
   );
 }
 
+/** One terse line for shell prompts: "✉ 3 days" for the cwd's project. */
+function status(): void {
+  const project = findProjectByPath(process.cwd());
+  if (!project) return;
+  const [latest] = listBriefings(project.slug);
+  console.log(`✉ ${latest ? awayFor(latest.writtenAt) : "no letter yet"}`);
+}
+
 /** Version the data dir with git; pull/push if a remote is configured. */
 function sync(): void {
   const dir = dataDir();
@@ -502,6 +510,9 @@ switch (command) {
     break;
   case "sync":
     sync();
+    break;
+  case "status":
+    status();
     break;
   case "help":
   case "--help":

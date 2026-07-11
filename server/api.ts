@@ -29,7 +29,8 @@ export const api = Router();
 
 api.get("/projects", (_req, res) => {
   const projects = listProjects().map((project) => {
-    const [latest] = listBriefings(project.slug);
+    const briefings = listBriefings(project.slug);
+    const [latest] = briefings;
     const briefing = latest ? readBriefing(project.slug, latest.id) : null;
     return {
       ...project,
@@ -40,6 +41,8 @@ api.get("/projects", (_req, res) => {
             nextMove: briefing.sections.nextMove,
           }
         : null,
+      letterCount: briefings.length,
+      firstWrittenAt: briefings.at(-1)?.writtenAt ?? null,
     };
   });
   res.json(projects);

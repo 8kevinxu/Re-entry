@@ -826,6 +826,15 @@ kbd {
   margin: 0 0 2rem;
 }
 
+.stat-line {
+  margin-top: 3rem;
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
 .trash-row {
   display: flex;
   align-items: center;
