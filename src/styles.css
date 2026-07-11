@@ -1,0 +1,549 @@
+/* Re-entry — calm, letter-like. Paper in the light, lamplight in the dark. */
+
+:root {
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --bg: #f6f1e7;
+  --surface: #fffdf7;
+  --ink: #2b2418;
+  --muted: #857962;
+  --line: #e2d9c4;
+  --accent: #97392c;
+  --accent-ink: #fff6ee;
+  --accent-soft: rgba(151, 57, 44, 0.07);
+  --shadow: 0 1px 2px rgba(43, 36, 24, 0.05), 0 8px 24px rgba(43, 36, 24, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16130d;
+    --surface: #201c14;
+    --ink: #eae2d0;
+    --muted: #9a8d74;
+    --line: #35301f;
+    --accent: #d98a6a;
+    --accent-ink: #251008;
+    --accent-soft: rgba(217, 138, 106, 0.1);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 5rem;
+}
+
+.page.narrow {
+  max-width: 540px;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* --- Masthead / dashboard ------------------------------------------------ */
+
+.masthead {
+  margin-bottom: 3rem;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-size: 2.6rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.tagline {
+  color: var(--muted);
+  margin: 0.25rem 0 0;
+  font-style: italic;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+
+.list-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.list-title {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.project-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.project-list li {
+  min-width: 0;
+}
+
+.project-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.project-card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.project-name {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+}
+
+.away-badge {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 0.1rem 0.6rem;
+  white-space: nowrap;
+}
+
+.project-teaser {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.first-run {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  max-width: 34rem;
+}
+
+.first-run .button {
+  margin-top: 1rem;
+}
+
+/* --- Buttons & forms ----------------------------------------------------- */
+
+.button {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  font-weight: 550;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+
+.button:hover {
+  border-color: var(--accent);
+}
+
+.button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.button.primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.button.subtle {
+  border-color: transparent;
+  background: none;
+  color: var(--muted);
+}
+
+.button.subtle:hover {
+  color: var(--accent);
+}
+
+.back {
+  display: inline-block;
+  font-size: 0.88rem;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 2rem;
+}
+
+.back:hover {
+  color: var(--accent);
+}
+
+.screen-title {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 2rem;
+  margin: 0 0 1.5rem;
+}
+
+.stack {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.field {
+  display: block;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+
+.field-label em {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.field-hint {
+  margin: -0.2rem 0 0.6rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+input,
+textarea {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.link-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.error {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+/* --- Project / letter view ----------------------------------------------- */
+
+.project-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.project-header .screen-title {
+  margin-bottom: 0.5rem;
+}
+
+.pile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.9rem;
+  margin: 0.3rem 0 0;
+}
+
+.pile-label {
+  color: var(--muted);
+}
+
+.letter {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 2.4rem 2.6rem 2.2rem;
+  margin-top: 2rem;
+  font-family: var(--serif);
+  font-size: 1.08rem;
+}
+
+.dateline {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  margin: 0 0 1.6rem;
+}
+
+.next-move {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 1rem 1.3rem;
+  margin-bottom: 2rem;
+}
+
+.next-move-label {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+.next-move-body {
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+.next-move-body p,
+.letter-section p,
+.signoff p {
+  margin: 0 0 0.8em;
+}
+
+.next-move-body p:last-child,
+.letter-section p:last-child {
+  margin-bottom: 0;
+}
+
+.letter-section {
+  margin-bottom: 1.8rem;
+}
+
+.letter-section h2 {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  margin: 0 0 0.4rem;
+}
+
+.signoff {
+  border-top: 1px solid var(--line);
+  padding-top: 1.4rem;
+  font-style: italic;
+}
+
+.signature {
+  color: var(--muted);
+  margin: 0.4rem 0 0 !important;
+}
+
+.archive {
+  margin-top: 2.5rem;
+}
+
+.archive ul {
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+}
+
+.archive li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.archive a {
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.archive a:hover {
+  color: var(--accent);
+}
+
+.archive .ago {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.project-footer {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+/* --- The ritual ----------------------------------------------------------- */
+
+.ritual-timer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.55;
+  transition: width 0.5s linear;
+}
+
+.ritual-body {
+  margin-top: 14vh;
+}
+
+.ritual-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2.2rem;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.dot.done {
+  background: var(--muted);
+}
+
+.dot.current {
+  background: var(--accent);
+}
+
+.ritual-prompt {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 2.1rem;
+  line-height: 1.25;
+  margin: 0 0 0.6rem;
+}
+
+.ritual-hint {
+  color: var(--muted);
+  margin: 0 0 1.4rem;
+}
+
+.ritual textarea {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  line-height: 1.6;
+  padding: 1rem 1.1rem;
+  resize: vertical;
+}
+
+.nudge {
+  color: var(--accent);
+  font-size: 0.9rem;
+  margin: 0.6rem 0 0;
+}
+
+.ritual-keys {
+  display: flex;
+  gap: 1.4rem;
+  margin-top: 1rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+kbd {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0.05rem 0.4rem;
+  background: var(--surface);
+}
+
+/* --- Sealed --------------------------------------------------------------- */
+
+.sealed {
+  text-align: center;
+  padding-top: 22vh;
+}
+
+.seal-mark {
+  font-size: 2.6rem;
+  color: var(--accent);
+}
+
+.seal-title {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 2.2rem;
+  margin: 0.6rem 0 0.2rem;
+}
+
+.seal-sub {
+  color: var(--muted);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  margin: 0 0 2rem;
+}
+
+@media (max-width: 560px) {
+  .letter {
+    padding: 1.6rem 1.4rem;
+  }
+
+  .link-row {
+    grid-template-columns: 1fr;
+  }
+}
