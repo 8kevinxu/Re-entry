@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 
 before(() => {
   process.env.RE_ENTRY_HOME = fs.mkdtempSync(
@@ -103,6 +104,43 @@ test("updateProject archives and renames", () => {
   assert.equal(updated?.archived, true);
   assert.equal(updated?.name, "Renamed");
   assert.equal(store.getProject(project.slug)?.archived, true);
+});
+
+test("createBriefing captures a git snapshot of local pile links", () => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), "re-entry-repo-"));
+  const git = (...args: string[]) =>
+    execFileSync("git", ["-C", repo, ...args], { stdio: "pipe" });
+  git("init", "-q");
+  git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "--allow-empty", "-q", "-m", "hello world");
+  fs.writeFileSync(path.join(repo, "dirty.txt"), "x");
+
+  const project = store.createProject("Snapshotted", [
+    { label: "Code", url: repo },
+    { label: "Site", url: "https://example.com" },
+  ]);
+  const created = store.createBriefing(project.slug, {
+    standNow: "s",
+    nextMove: "n",
+  });
+  assert.ok(created.sections.snapshot?.includes("hello world"));
+  assert.ok(created.sections.snapshot?.includes("1 uncommitted change"));
+  assert.ok(!created.sections.snapshot?.includes("example.com"));
+  const read = store.readBriefing(project.slug, created.id);
+  assert.equal(read?.sections.snapshot, created.sections.snapshot);
+});
+
+test("projects without local repos get no snapshot section", () => {
+  const project = store.createProject("No Repo", []);
+  const created = store.createBriefing(project.slug, {
+    standNow: "s",
+    nextMove: "n",
+  });
+  assert.equal(created.sections.snapshot, "");
+  const file = fs.readFileSync(
+    path.join(store.dataDir(), "projects", project.slug, "briefings", `${created.id}.md`),
+    "utf8"
+  );
+  assert.ok(!file.includes("## Code snapshot"));
 });
 
 test("listProjects sees everything created", () => {

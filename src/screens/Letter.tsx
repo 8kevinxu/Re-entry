@@ -121,6 +121,17 @@ export function Letter({
               <p className="signature">— past you</p>
             </footer>
           )}
+
+          {briefing.sections.snapshot && (
+            <aside className="snapshot">
+              <span className="snapshot-label">
+                P.S. — the code, as you left it
+              </span>
+              {briefing.sections.snapshot.split("\n").map((line, i) => (
+                <code key={i}>{line}</code>
+              ))}
+            </aside>
+          )}
         </article>
       )}
 

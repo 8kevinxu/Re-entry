@@ -421,6 +421,29 @@ textarea:focus {
   margin: 0.4rem 0 0 !important;
 }
 
+.snapshot {
+  margin-top: 1.6rem;
+  color: var(--muted);
+}
+
+.snapshot-label {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 0.35rem;
+}
+
+.snapshot code {
+  display: block;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
 .archive {
   margin-top: 2.5rem;
 }

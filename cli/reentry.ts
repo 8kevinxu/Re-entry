@@ -116,6 +116,11 @@ function back(query: string): void {
     console.log(indent(indent(italic(briefing.sections.letter))));
     console.log(indent(indent(dim(italic("— past you")))));
   }
+  if (briefing.sections.snapshot) {
+    console.log();
+    console.log(dim("  P.S. — the code, as you left it:"));
+    console.log(dim(indent(indent(briefing.sections.snapshot))));
+  }
   if (project.links.length > 0) {
     console.log();
     console.log(dim(`  The pile: ${project.links.map((l) => `${l.label} → ${l.url}`).join("   ")}`));

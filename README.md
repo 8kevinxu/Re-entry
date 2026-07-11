@@ -25,6 +25,11 @@ one question per screen, keyboard-first:
 briefing, rendered as a letter from past-you — with the next move front and
 center, and the pile linked quietly underneath.
 
+If the pile includes a local path that's a git repository, sealing a letter
+also captures a **P.S. — the code, as you left it**: branch, HEAD commit, and
+whether the tree was dirty. Facts get recorded automatically; the narrative
+stays yours.
+
 ## Quickstart
 
 Requires Node 18+.

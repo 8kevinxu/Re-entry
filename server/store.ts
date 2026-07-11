@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { execFileSync } from "node:child_process";
 import {
   SECTION_ORDER,
   SECTION_TITLES,
@@ -168,10 +169,44 @@ export function readBriefing(slug: string, id: string): Briefing | null {
   return { id, writtenAt, sections };
 }
 
+/** Git state of any local-path pile links, one line per repo. "" if none. */
+export function gitSnapshot(links: ProjectLink[]): string {
+  const lines: string[] = [];
+  for (const link of links) {
+    if (!/^[/~]/.test(link.url)) continue;
+    const cwd = link.url.replace(/^~(?=\/|$)/, os.homedir());
+    try {
+      const git = (...args: string[]) =>
+        execFileSync("git", ["-C", cwd, ...args], {
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+          timeout: 3000,
+        }).trim();
+      git("rev-parse", "--is-inside-work-tree");
+      const branch = git("branch", "--show-current") || "detached HEAD";
+      const head = git("log", "-1", "--format=%h %s");
+      const dirty = git("status", "--porcelain");
+      const state = dirty
+        ? `${dirty.split("\n").length} uncommitted change(s)`
+        : "clean";
+      lines.push(`${link.label}: ${branch} @ ${head} — ${state}`);
+    } catch {
+      // not a git repo, or git unavailable — say nothing
+    }
+  }
+  return lines.join("\n");
+}
+
 export function createBriefing(
   slug: string,
   sections: BriefingSections
 ): Briefing {
+  if (!sections.snapshot) {
+    sections = {
+      ...sections,
+      snapshot: gitSnapshot(getProject(slug)?.links ?? []),
+    };
+  }
   const writtenAt = new Date();
   const id = writtenAt
     .toISOString()

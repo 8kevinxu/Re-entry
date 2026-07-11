@@ -19,6 +19,8 @@ export interface BriefingSections {
   nextMove: string;
   ignore?: string;
   letter?: string;
+  /** Auto-captured git state of local repos in the pile — not asked in the ritual. */
+  snapshot?: string;
 }
 
 export interface Briefing {
@@ -50,6 +52,7 @@ export const SECTION_ORDER: (keyof BriefingSections)[] = [
   "nextMove",
   "ignore",
   "letter",
+  "snapshot",
 ];
 
 export const SECTION_TITLES: Record<keyof BriefingSections, string> = {
@@ -59,4 +62,5 @@ export const SECTION_TITLES: Record<keyof BriefingSections, string> = {
   nextMove: "The very next move",
   ignore: "Ignore this",
   letter: "To future you",
+  snapshot: "Code snapshot",
 };
