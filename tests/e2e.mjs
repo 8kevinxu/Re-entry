@@ -16,9 +16,12 @@ const BASE = `http://localhost:${PORT}`;
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "re-entry-e2e-"));
 
 const results = [];
-const check = (name, ok) => {
+const check = (name, ok, hint) => {
   results.push(`${ok ? "PASS" : "FAIL"}  ${name}`);
-  if (!ok) process.exitCode = 1;
+  if (!ok) {
+    process.exitCode = 1;
+    if (hint !== undefined) console.error(`FAIL ${name} — saw:`, hint);
+  }
 };
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -205,7 +208,8 @@ try {
   check(
     "restored letter rejoins the correspondence",
     threadNexts.length === 3 &&
-      threadNexts.some((t) => t.includes("Seal via the review screen"))
+      threadNexts.some((t) => t.includes("Seal via the review screen")),
+    threadNexts
   );
 
   // --- 10. Archive round-trip ---------------------------------------------------

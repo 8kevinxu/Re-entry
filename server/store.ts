@@ -261,9 +261,14 @@ export function restoreBriefing(file: string): boolean {
   if (!/^[\w.-]+--[\w.-]+\.md$/.test(file)) return false;
   const source = path.join(dataDir(), "trash", file);
   if (!fs.existsSync(source)) return false;
-  const [slug, id] = file.replace(/\.md$/, "").split("--");
+  const [slug, base] = file.replace(/\.md$/, "").split("--");
   if (!getProject(slug)) return false;
   fs.mkdirSync(briefingsDir(slug), { recursive: true });
+  // Never clobber a letter that was written while this one sat in the trash.
+  let id = base;
+  for (let n = 2; fs.existsSync(path.join(briefingsDir(slug), `${id}.md`)); n++) {
+    id = `${base}-${n}`;
+  }
   fs.renameSync(source, path.join(briefingsDir(slug), `${id}.md`));
   return true;
 }
@@ -381,10 +386,13 @@ export function createBriefing(
     };
   }
   const writtenAt = new Date();
-  const id = writtenAt
-    .toISOString()
-    .slice(0, 19)
-    .replace(/:/g, "-");
+  // Ids are second-resolution timestamps; letters sealed within the same
+  // second (or colliding with a trashed letter's id) get a numeric suffix.
+  const base = writtenAt.toISOString().slice(0, 19).replace(/:/g, "-");
+  let id = base;
+  for (let n = 2; fs.existsSync(path.join(briefingsDir(slug), `${id}.md`)); n++) {
+    id = `${base}-${n}`;
+  }
 
   let markdown = `---\nwrittenAt: ${writtenAt.toISOString()}\n---\n`;
   for (const key of SECTION_ORDER) {

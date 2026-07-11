@@ -212,6 +212,39 @@ test("deleteBriefing moves the letter to the trash", () => {
   assert.ok(fs.readFileSync(trashed, "utf8").includes("## Where things stand"));
 });
 
+test("letters sealed in the same second get distinct ids", () => {
+  const project = store.createProject("Rapid Fire", []);
+  const ids = [1, 2, 3].map(
+    (n) => store.createBriefing(project.slug, { standNow: `${n}`, nextMove: "n" }).id
+  );
+  assert.equal(new Set(ids).size, 3);
+  assert.equal(store.listBriefings(project.slug).length, 3);
+});
+
+test("restore never clobbers a letter written in the meantime", () => {
+  const project = store.createProject("No Clobber", []);
+  const first = store.createBriefing(project.slug, {
+    standNow: "original",
+    nextMove: "n",
+  });
+  // Simulate: first letter trashed, then a new letter lands on the same id.
+  store.deleteBriefing(project.slug, first.id);
+  const dir = path.join(store.dataDir(), "projects", project.slug, "briefings");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, `${first.id}.md`),
+    "---\nwrittenAt: 2026-01-01T00:00:00.000Z\n---\n\n## Where things stand\n\nnewer letter\n"
+  );
+  assert.equal(store.restoreBriefing(`${project.slug}--${first.id}.md`), true);
+  const letters = store.listBriefings(project.slug);
+  assert.equal(letters.length, 2);
+  const contents = letters.map(
+    (b) => store.readBriefing(project.slug, b.id)?.sections.standNow
+  );
+  assert.ok(contents.includes("original"));
+  assert.ok(contents.includes("newer letter"));
+});
+
 test("trash lists and restores deleted letters", () => {
   const project = store.createProject("Restorable", []);
   const created = store.createBriefing(project.slug, {
