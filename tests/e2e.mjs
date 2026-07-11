@@ -214,6 +214,7 @@ try {
 
   // --- 10. Archive round-trip ---------------------------------------------------
   await page.goto(`${BASE}/#/p/dogfood`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".project-footer button", { timeout: 5000 });
   await page.evaluate(() => {
     const buttons = [...document.querySelectorAll(".project-footer button")];
     buttons.find((b) => b.textContent.includes("Archive project")).click();
@@ -223,7 +224,7 @@ try {
   const archivedName = await page.$eval(".archived a", (el) => el.textContent);
   check("archived project appears in the archived section", archivedName.includes("Dogfood"));
   await page.click(".archived a");
-  await page.waitForSelector(".project-footer");
+  await page.waitForSelector(".project-footer button", { timeout: 5000 });
   await page.evaluate(() => {
     const buttons = [...document.querySelectorAll(".project-footer button")];
     buttons.find((b) => b.textContent.includes("Unarchive")).click();
