@@ -55,6 +55,8 @@ export interface ProjectListing extends Project {
 export interface ProjectDetail extends Project {
   briefings: BriefingSummary[];
   latest: Briefing | null;
+  /** What changed in the repo since the latest letter's snapshot, if knowable. */
+  since: string | null;
 }
 
 export const SECTION_ORDER: (keyof BriefingSections)[] = [

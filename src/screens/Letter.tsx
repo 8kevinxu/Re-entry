@@ -105,6 +105,10 @@ export function Letter({
             </time>
           </p>
 
+          {!isOlderLetter && project.since && (
+            <p className="since">While you were away: {project.since}.</p>
+          )}
+
           <div className="next-move">
             <span className="next-move-label">Your next move</span>
             <div className="next-move-body">

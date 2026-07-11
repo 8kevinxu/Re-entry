@@ -24,6 +24,7 @@ import {
   listProjects,
   readBriefing,
   searchBriefings,
+  sinceSnapshot,
 } from "../server/store.ts";
 import { awayFor, spanBetween, writtenAgo } from "../src/time.ts";
 
@@ -113,6 +114,10 @@ function back(query: string): void {
   console.log(
     `  ${dim(`Written by past-you · ${writtenAgo(briefing.writtenAt)}`)}`
   );
+  const since = sinceSnapshot(project.links, briefing.sections.snapshot);
+  if (since) {
+    console.log(`  ${dim(`While you were away: ${since}.`)}`);
+  }
   console.log();
   console.log(accent(bold("  YOUR NEXT MOVE")));
   console.log(indent(indent(briefing.sections.nextMove)));

@@ -129,6 +129,30 @@ test("createBriefing captures a git snapshot of local pile links", () => {
   assert.equal(read?.sections.snapshot, created.sections.snapshot);
 });
 
+test("sinceSnapshot reports what changed after the letter", () => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), "re-entry-since-"));
+  const git = (...args: string[]) =>
+    execFileSync("git", ["-C", repo, ...args], { stdio: "pipe" });
+  git("init", "-q");
+  git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "--allow-empty", "-q", "-m", "base");
+
+  const links = [{ label: "Code", url: repo }];
+  const snapshot = store.gitSnapshot(links);
+
+  assert.equal(store.sinceSnapshot(links, snapshot), "nothing changed in the repo");
+
+  git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "--allow-empty", "-q", "-m", "one more");
+  fs.writeFileSync(path.join(repo, "wip.txt"), "x");
+  assert.equal(
+    store.sinceSnapshot(links, snapshot),
+    "1 commit landed · 1 uncommitted change(s) in the tree"
+  );
+
+  assert.equal(store.sinceSnapshot(links, undefined), null);
+  assert.equal(store.sinceSnapshot(links, "no hash here"), null);
+  assert.equal(store.sinceSnapshot([], snapshot), null);
+});
+
 test("projects without local repos get no snapshot section", () => {
   const project = store.createProject("No Repo", []);
   const created = store.createBriefing(project.slug, {

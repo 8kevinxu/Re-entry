@@ -11,6 +11,7 @@ import {
   readBriefing,
   restoreBriefing,
   searchBriefings,
+  sinceSnapshot,
   updateProject,
 } from "./store.ts";
 
@@ -89,7 +90,10 @@ api.get("/projects/:slug", (req, res) => {
   const latest = briefings.length
     ? readBriefing(project.slug, briefings[0].id)
     : null;
-  res.json({ ...project, briefings, latest });
+  const since = latest
+    ? sinceSnapshot(project.links, latest.sections.snapshot)
+    : null;
+  res.json({ ...project, briefings, latest, since });
 });
 
 api.get("/projects/:slug/thread", (req, res) => {

@@ -334,6 +334,42 @@ export function gitSnapshot(links: ProjectLink[]): string {
   return lines.join("\n");
 }
 
+/**
+ * What changed in the repo since a letter's snapshot was taken.
+ * Returns null when there's no snapshot hash or the repo can't answer
+ * (e.g. the commit was rebased away).
+ */
+export function sinceSnapshot(
+  links: ProjectLink[],
+  snapshot: string | undefined
+): string | null {
+  const hash = snapshot?.match(/@ ([0-9a-f]{7,40}) /)?.[1];
+  if (!hash) return null;
+  for (const link of links) {
+    if (!/^[/~]/.test(link.url)) continue;
+    const cwd = expandHome(link.url);
+    try {
+      const git = (...args: string[]) =>
+        execFileSync("git", ["-C", cwd, ...args], {
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+          timeout: 3000,
+        }).trim();
+      const commits = Number(git("rev-list", "--count", `${hash}..HEAD`));
+      const dirty = git("status", "--porcelain");
+      const parts: string[] = [];
+      if (commits > 0)
+        parts.push(`${commits} commit${commits === 1 ? "" : "s"} landed`);
+      if (dirty)
+        parts.push(`${dirty.split("\n").length} uncommitted change(s) in the tree`);
+      return parts.length > 0 ? parts.join(" · ") : "nothing changed in the repo";
+    } catch {
+      // not the snapshot's repo, or the hash is gone — try the next link
+    }
+  }
+  return null;
+}
+
 export function createBriefing(
   slug: string,
   sections: BriefingSections
