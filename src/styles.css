@@ -166,6 +166,42 @@ mark {
   padding: 0 0.1em;
 }
 
+.archived {
+  margin-top: 2.4rem;
+}
+
+.archived summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.archived summary::before {
+  content: "▸ ";
+}
+
+.archived[open] summary::before {
+  content: "▾ ";
+}
+
+.archived ul {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+
+.archived li {
+  padding: 0.3rem 0;
+}
+
+.archived a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.archived a:hover {
+  color: var(--accent);
+}
+
 .list-header {
   display: flex;
   align-items: baseline;

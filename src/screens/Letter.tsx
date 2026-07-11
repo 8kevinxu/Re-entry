@@ -41,6 +41,11 @@ export function Letter({
   const leaveHref = `#/p/${encodeURIComponent(slug)}/leave`;
 
   async function archive() {
+    if (project!.archived) {
+      await api.updateProject(slug, { archived: false });
+      setRefresh((n) => n + 1);
+      return;
+    }
     if (!window.confirm(`Archive “${project!.name}”? Its files stay on disk.`)) return;
     await api.updateProject(slug, { archived: true });
     navigate("/");
@@ -192,7 +197,7 @@ export function Letter({
           </button>
         )}
         <button className="button subtle" onClick={archive}>
-          Archive project
+          {project.archived ? "Unarchive project" : "Archive project"}
         </button>
       </footer>
     </div>

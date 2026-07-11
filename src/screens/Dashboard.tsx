@@ -57,7 +57,7 @@ export function Dashboard() {
       return lastA.localeCompare(lastB); // longest away first
     });
   const searching = q !== "";
-  const anyProjects = projects.some((project) => !project.archived);
+  const firstRun = projects.length === 0;
 
   return (
     <div className="page">
@@ -66,7 +66,7 @@ export function Dashboard() {
         <p className="tagline">Come back to a letter, not a pile.</p>
       </header>
 
-      {!anyProjects ? (
+      {firstRun ? (
         <section className="first-run">
           <p>
             Every time you step away from a project, Re-entry walks you through
@@ -100,7 +100,11 @@ export function Dashboard() {
             </a>
           </div>
           {active.length === 0 ? (
-            <p className="empty-note">No project names match “{query.trim()}”.</p>
+            <p className="empty-note">
+              {searching
+                ? `No project names match “${query.trim()}”.`
+                : "Everything's archived. Quiet around here."}
+            </p>
           ) : (
             <ul className="project-list">
               {active.map((project) => (
@@ -151,6 +155,25 @@ export function Dashboard() {
           )}
           {searching && hits.length === 0 && active.length > 0 && (
             <p className="empty-note">Nothing in the letters themselves.</p>
+          )}
+
+          {!searching && projects.some((p) => p.archived) && (
+            <details className="archived">
+              <summary className="list-title">
+                Archived ({projects.filter((p) => p.archived).length})
+              </summary>
+              <ul>
+                {projects
+                  .filter((p) => p.archived)
+                  .map((project) => (
+                    <li key={project.slug}>
+                      <a href={`#/p/${encodeURIComponent(project.slug)}`}>
+                        {project.name}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </details>
           )}
         </>
       )}

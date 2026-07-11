@@ -183,6 +183,29 @@ try {
   await page.reload({ waitUntil: "networkidle0" });
   check("chosen theme survives a reload", (await bg()) === after);
 
+  // --- 10. Archive round-trip ---------------------------------------------------
+  await page.goto(`${BASE}/#/p/dogfood`, { waitUntil: "networkidle0" });
+  await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll(".project-footer button")];
+    buttons.find((b) => b.textContent.includes("Archive project")).click();
+  });
+  await page.waitForSelector(".archived", { timeout: 3000 });
+  await page.click(".archived summary");
+  const archivedName = await page.$eval(".archived a", (el) => el.textContent);
+  check("archived project appears in the archived section", archivedName.includes("Dogfood"));
+  await page.click(".archived a");
+  await page.waitForSelector(".project-footer");
+  await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll(".project-footer button")];
+    buttons.find((b) => b.textContent.includes("Unarchive")).click();
+  });
+  await pause(500);
+  await page.goto(`${BASE}/#/`, { waitUntil: "networkidle0" });
+  const activeNames = await page.$$eval(".project-name", (els) =>
+    els.map((el) => el.textContent)
+  );
+  check("unarchived project is active again", activeNames.some((n) => n.includes("Dogfood")));
+
   await browser.close();
 } finally {
   server.kill();

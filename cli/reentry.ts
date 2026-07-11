@@ -3,6 +3,8 @@
 // Runs on plain Node ≥ 23.6 (native type stripping). Data: ~/.re-entry.
 
 import readline from "node:readline";
+import { spawn } from "node:child_process";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { installNudge, isGitRepo, uninstallNudge } from "./hook.ts";
 import {
@@ -351,6 +353,38 @@ function nudge(slug: string): void {
   );
 }
 
+const PORT = Number(process.env.PORT || 1969);
+
+/** Open the web app (starting the server first if it isn't running). */
+async function open(query: string): Promise<void> {
+  const url = query
+    ? `http://localhost:${PORT}/#/p/${encodeURIComponent(resolve(query).slug)}`
+    : `http://localhost:${PORT}/`;
+  const up = await fetch(`http://localhost:${PORT}/api/projects`).then(
+    (r) => r.ok,
+    () => false
+  );
+  if (!up) {
+    const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+    spawn("npx", ["tsx", "server/index.ts"], {
+      cwd: root,
+      detached: true,
+      stdio: "ignore",
+      env: process.env,
+    }).unref();
+    for (let i = 0; i < 20; i++) {
+      await new Promise((r) => setTimeout(r, 250));
+      if (await fetch(`http://localhost:${PORT}/api/projects`).then((r) => r.ok, () => false))
+        break;
+    }
+    console.log(`Started the Re-entry server on port ${PORT}.`);
+  }
+  const opener =
+    process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
+  spawn(opener, [url], { detached: true, stdio: "ignore" }).unref();
+  console.log(url);
+}
+
 function newProject(name: string): void {
   if (!name.trim()) {
     console.error("Usage: reentry new <name>");
@@ -379,6 +413,7 @@ function help(): void {
   reentry thread [project] the whole correspondence, oldest first
   reentry find <words>     search every letter
   reentry new <name>       start a new project
+  reentry open [project]   open the web app (starts the server if needed)
   reentry hook [project]   nudge after \`git push\` in the project's repos
   reentry unhook [project] remove the nudge
 
@@ -421,6 +456,9 @@ switch (command) {
     break;
   case "new":
     newProject(args.join(" "));
+    break;
+  case "open":
+    await open(args.join(" "));
     break;
   case "help":
   case "--help":

@@ -75,6 +75,7 @@ npm run reentry -- leave [project]    # write one — six questions
 npm run reentry -- thread [project]   # the whole correspondence, oldest first
 npm run reentry -- find <words>       # search every letter
 npm run reentry -- new <name>         # start a new project
+npm run reentry -- open [project]     # jump to the web app (starts the server)
 npm run reentry -- hook [project]     # nudge after `git push` (see below)
 npm run reentry -- unhook [project]   # remove the nudge
 ```
