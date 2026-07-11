@@ -1,5 +1,7 @@
 # Re-entry
 
+[![CI](https://github.com/8kevinxu/Re-entry/actions/workflows/ci.yml/badge.svg)](https://github.com/8kevinxu/Re-entry/actions/workflows/ci.yml)
+
 **Come back to a letter, not a pile.**
 
 <p align="center">
