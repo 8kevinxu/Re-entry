@@ -49,6 +49,9 @@ export const api = {
       `/projects/${encodeURIComponent(slug)}/briefings/${encodeURIComponent(id)}`
     ),
 
+  getThread: (slug: string) =>
+    request<Briefing[]>(`/projects/${encodeURIComponent(slug)}/thread`),
+
   deleteBriefing: (slug: string, id: string) =>
     request<{ ok: boolean }>(
       `/projects/${encodeURIComponent(slug)}/briefings/${encodeURIComponent(id)}`,

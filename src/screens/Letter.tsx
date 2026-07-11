@@ -155,7 +155,15 @@ export function Letter({
 
       {hasArchive && (
         <section className="archive">
-          <h2 className="list-title">Previous letters</h2>
+          <div className="archive-header">
+            <h2 className="list-title">Previous letters</h2>
+            <a
+              className="thread-link"
+              href={`#/p/${encodeURIComponent(slug)}/thread`}
+            >
+              Read the whole thread →
+            </a>
+          </div>
           <ul>
             {isOlderLetter && project.latest && (
               <li>

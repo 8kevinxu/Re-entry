@@ -1,6 +1,16 @@
 /** "moments", "20 minutes", "an hour", "a day", "3 weeks", "over a year" … */
 export function awayFor(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime();
+  return humanizeMs(Date.now() - new Date(iso).getTime());
+}
+
+/** The stretch between two letters, phrased as passing time: "3 weeks pass". */
+export function spanBetween(fromIso: string, toIso: string): string {
+  const span = humanizeMs(new Date(toIso).getTime() - new Date(fromIso).getTime());
+  const singular = /^(an? |over )/.test(span);
+  return `${span} ${singular ? "passes" : "pass"}`;
+}
+
+function humanizeMs(ms: number): string {
   const minutes = Math.floor(ms / 60_000);
   if (minutes < 2) return "moments";
   if (minutes < 60) return `${minutes} minutes`;

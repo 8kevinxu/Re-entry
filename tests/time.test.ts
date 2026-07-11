@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { awayFor, writtenAgo } from "../src/time.ts";
+import { awayFor, spanBetween, writtenAgo } from "../src/time.ts";
 
 function ago(ms: number): string {
   return new Date(Date.now() - ms).toISOString();
@@ -22,6 +22,16 @@ test("awayFor buckets read naturally", () => {
   assert.equal(awayFor(ago(92 * DAY)), "3 months");
   assert.equal(awayFor(ago(400 * DAY)), "over a year");
   assert.equal(awayFor(ago(800 * DAY)), "2 years");
+});
+
+test("spanBetween narrates the gap between letters", () => {
+  const start = "2026-01-01T00:00:00.000Z";
+  const plus = (ms: number) => new Date(Date.parse(start) + ms).toISOString();
+  assert.equal(spanBetween(start, plus(30_000)), "moments pass");
+  assert.equal(spanBetween(start, plus(90 * MINUTE)), "an hour passes");
+  assert.equal(spanBetween(start, plus(23 * HOUR)), "a day passes");
+  assert.equal(spanBetween(start, plus(21 * DAY)), "3 weeks pass");
+  assert.equal(spanBetween(start, plus(400 * DAY)), "over a year passes");
 });
 
 test("writtenAgo phrases correctly", () => {

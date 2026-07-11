@@ -69,6 +69,19 @@ api.get("/projects/:slug", (req, res) => {
   res.json({ ...project, briefings, latest });
 });
 
+api.get("/projects/:slug/thread", (req, res) => {
+  const project = getProject(req.params.slug);
+  if (!project) {
+    res.status(404).json({ error: "No such project." });
+    return;
+  }
+  const thread = listBriefings(project.slug)
+    .map((summary) => readBriefing(project.slug, summary.id))
+    .filter((briefing) => briefing !== null)
+    .reverse(); // oldest first — read the correspondence forward
+  res.json(thread);
+});
+
 api.patch("/projects/:slug", (req, res) => {
   const patch: Parameters<typeof updateProject>[1] = {};
   if (req.body?.name !== undefined) patch.name = String(req.body.name);

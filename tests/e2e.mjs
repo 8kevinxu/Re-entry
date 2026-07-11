@@ -142,7 +142,30 @@ try {
   check("edit saves a new name", title === "Dogfood Renamed");
   check("edit saves a new pile link", pileLink === "Docs");
 
-  // --- 7. "/" focuses dashboard search ----------------------------------------
+  // --- 7. Thread view: both letters, oldest first, gap marked -----------------
+  // Step 5 deleted the sealed letter, so add a second one via the API first.
+  await fetch(`${BASE}/api/projects/dogfood/briefings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sections: { standNow: "thread check", nextMove: "read the thread" },
+    }),
+  });
+  await page.goto(`${BASE}/#/p/dogfood/thread`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".thread-letter", { timeout: 3000 });
+  const letters = await page.$$eval(".thread-letter", (els) => els.length);
+  check("thread shows every letter", letters === 2);
+  const order = await page.$$eval(".next-move-body", (els) =>
+    els.map((el) => el.textContent)
+  );
+  check(
+    "thread reads oldest first",
+    order[0].includes("Verify the P.S.") && order[1].includes("read the thread")
+  );
+  const gap = await page.$eval(".thread-gap", (el) => el.textContent);
+  check("thread marks the passage of time", gap.includes("pass"));
+
+  // --- 8. "/" focuses dashboard search ----------------------------------------
   await page.goto(`${BASE}/#/`, { waitUntil: "networkidle0" });
   await page.keyboard.press("/");
   const focused = await page.evaluate(

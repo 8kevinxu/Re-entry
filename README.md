@@ -29,7 +29,9 @@ mis-sealed letter can be deleted from its page (it moves to
 
 The letters talk to each other: while you write *where things stand*, the
 ritual shows what your last letter said the next move was; while you list
-*open questions*, it shows what you wondered last time.
+*open questions*, it shows what you wondered last time. And each project's
+full correspondence is readable as one **thread** — oldest first, with the
+passage of time marked between letters (*· 3 weeks pass ·*).
 
 **When you come back**, you don't face the pile. You're greeted by that
 briefing, rendered as a letter from past-you — with the next move front and
