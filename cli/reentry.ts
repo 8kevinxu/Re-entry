@@ -15,6 +15,7 @@ import {
   listBriefings,
   listProjects,
   readBriefing,
+  searchBriefings,
 } from "../server/store.ts";
 import { awayFor, writtenAgo } from "../src/time.ts";
 
@@ -242,6 +243,23 @@ async function leave(query: string): Promise<void> {
   console.log();
 }
 
+function find(query: string): void {
+  const hits = searchBriefings(query);
+  if (hits.length === 0) {
+    console.log(`Nothing in your letters mentions “${query}”.`);
+    return;
+  }
+  console.log();
+  for (const hit of hits) {
+    console.log(
+      `  ${bold(hit.projectName)} ${dim(`· ${SECTION_TITLES[hit.section]} · ${writtenAgo(hit.writtenAt)}`)}`
+    );
+    console.log(dim(`    ${hit.snippet}`));
+    console.log(dim(`    reentry back ${hit.slug}`));
+    console.log();
+  }
+}
+
 function newProject(name: string): void {
   if (!name.trim()) {
     console.error("Usage: reentry new <name>");
@@ -259,6 +277,7 @@ function help(): void {
   reentry                 list projects by time away
   reentry back <project>  read the latest letter
   reentry leave <project> write one — six questions, sixty seconds
+  reentry find <words>    search every letter
   reentry new <name>      start a new project
 
   Projects match by slug or any part of the name.
@@ -285,6 +304,13 @@ switch (command) {
       process.exit(1);
     }
     await leave(args.join(" "));
+    break;
+  case "find":
+    if (!args[0]) {
+      console.error("Usage: reentry find <words>");
+      process.exit(1);
+    }
+    find(args.join(" "));
     break;
   case "new":
     newProject(args.join(" "));

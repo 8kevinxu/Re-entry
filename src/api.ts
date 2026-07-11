@@ -5,6 +5,7 @@ import type {
   ProjectDetail,
   ProjectLink,
   ProjectListing,
+  SearchHit,
 } from "../shared/types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -47,4 +48,13 @@ export const api = {
     request<Briefing>(
       `/projects/${encodeURIComponent(slug)}/briefings/${encodeURIComponent(id)}`
     ),
+
+  deleteBriefing: (slug: string, id: string) =>
+    request<{ ok: boolean }>(
+      `/projects/${encodeURIComponent(slug)}/briefings/${encodeURIComponent(id)}`,
+      { method: "DELETE" }
+    ),
+
+  search: (query: string) =>
+    request<SearchHit[]>(`/search?q=${encodeURIComponent(query)}`),
 };

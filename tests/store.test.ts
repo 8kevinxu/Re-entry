@@ -143,6 +143,56 @@ test("projects without local repos get no snapshot section", () => {
   assert.ok(!file.includes("## Code snapshot"));
 });
 
+test("searchBriefings finds text across projects, newest first", () => {
+  const projectA = store.createProject("Search Alpha", []);
+  const projectB = store.createProject("Search Beta", []);
+  store.createBriefing(projectA.slug, {
+    standNow: "The xylophone framework is half wired up.",
+    nextMove: "n",
+  });
+  store.createBriefing(projectB.slug, {
+    standNow: "s",
+    nextMove: "Tune the XYLOPHONE before the demo.",
+  });
+  const hits = store.searchBriefings("xylophone");
+  assert.equal(hits.length, 2);
+  assert.ok(hits.every((h) => h.snippet.toLowerCase().includes("xylophone")));
+  assert.ok(hits[0].writtenAt >= hits[1].writtenAt);
+  assert.equal(store.searchBriefings("").length, 0);
+  assert.equal(store.searchBriefings("no-such-word-anywhere").length, 0);
+});
+
+test("searchBriefings trims long snippets around the match", () => {
+  const project = store.createProject("Snippets", []);
+  store.createBriefing(project.slug, {
+    standNow: `${"a ".repeat(100)}needle in here ${"b ".repeat(100)}`,
+    nextMove: "n",
+  });
+  const [hit] = store.searchBriefings("needle");
+  assert.ok(hit.snippet.includes("needle"));
+  assert.ok(hit.snippet.length < 160);
+  assert.ok(hit.snippet.startsWith("…"));
+  assert.ok(hit.snippet.endsWith("…"));
+});
+
+test("deleteBriefing removes the file and nothing else", () => {
+  const project = store.createProject("Deletable", []);
+  const first = store.createBriefing(project.slug, { standNow: "1", nextMove: "1" });
+  const dir = path.join(store.dataDir(), "projects", project.slug, "briefings");
+  fs.writeFileSync(
+    path.join(dir, "2020-01-01T00-00-00.md"),
+    "---\nwrittenAt: 2020-01-01T00:00:00.000Z\n---\n\n## Where things stand\n\nold\n"
+  );
+  assert.equal(store.listBriefings(project.slug).length, 2);
+  assert.equal(store.deleteBriefing(project.slug, "2020-01-01T00-00-00"), true);
+  assert.deepEqual(
+    store.listBriefings(project.slug).map((b) => b.id),
+    [first.id]
+  );
+  assert.equal(store.deleteBriefing(project.slug, "2020-01-01T00-00-00"), false);
+  assert.equal(store.deleteBriefing(project.slug, "../project"), false);
+});
+
 test("listProjects sees everything created", () => {
   const slugs = store.listProjects().map((p) => p.slug);
   assert.ok(slugs.includes("round-trip"));

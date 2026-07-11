@@ -15,6 +15,7 @@ export function Letter({
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     setProject(null);
@@ -27,7 +28,7 @@ export function Letter({
         setBriefing(detail.latest);
       }
     }, (e) => setError(e.message));
-  }, [slug, briefingId]);
+  }, [slug, briefingId, refresh]);
 
   if (error) return <div className="page"><p className="error">{error}</p></div>;
   if (!project) return <div className="page" />;
@@ -43,6 +44,15 @@ export function Letter({
     if (!window.confirm(`Archive “${project!.name}”? Its files stay on disk.`)) return;
     await api.updateProject(slug, { archived: true });
     navigate("/");
+  }
+
+  async function deleteLetter() {
+    if (!briefing) return;
+    if (!window.confirm("Delete this letter? Its markdown file is removed from disk."))
+      return;
+    await api.deleteBriefing(slug, briefing.id);
+    if (briefingId) navigate(`/p/${encodeURIComponent(slug)}`);
+    else setRefresh((n) => n + 1);
   }
 
   return (
@@ -160,6 +170,11 @@ export function Letter({
       )}
 
       <footer className="project-footer">
+        {briefing && (
+          <button className="button subtle" onClick={deleteLetter}>
+            Delete this letter
+          </button>
+        )}
         <button className="button subtle" onClick={archive}>
           Archive project
         </button>

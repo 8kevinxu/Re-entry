@@ -21,6 +21,11 @@ one question per screen, keyboard-first:
 5. **What should future-you ignore?** — dead ends and red herrings *(optional)*
 6. **A line to future you** — just for morale *(optional)*
 
+At the end you read the whole letter back before sealing it. Answers are kept
+as a local draft until then, so a stray reload loses nothing. Everything is
+searchable later — from the dashboard or `reentry find <words>` — and a
+mis-sealed letter can be deleted from its page.
+
 **When you come back**, you don't face the pile. You're greeted by that
 briefing, rendered as a letter from past-you — with the next move front and
 center, and the pile linked quietly underneath.
@@ -55,6 +60,7 @@ TypeScript natively):
 npm run reentry                        # list projects by time away
 npm run reentry -- back <project>     # read the latest letter
 npm run reentry -- leave <project>    # write one — six questions
+npm run reentry -- find <words>       # search every letter
 npm run reentry -- new <name>         # start a new project
 ```
 
@@ -66,6 +72,7 @@ the same files, so use whichever is closer at hand.
 
 ```sh
 npm test         # node:test suite over the storage layer and time phrasing
+npm run test:e2e # drives the built app in headless Chrome (needs local Chrome)
 ```
 
 ## Your data

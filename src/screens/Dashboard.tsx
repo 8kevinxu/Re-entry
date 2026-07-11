@@ -1,27 +1,46 @@
 import { useEffect, useState } from "react";
-import type { ProjectListing } from "../../shared/types";
+import type { ProjectListing, SearchHit } from "../../shared/types";
+import { SECTION_TITLES } from "../../shared/types";
 import { api } from "../api";
-import { awayFor } from "../time";
-import { firstLine } from "../ui";
+import { awayFor, writtenAgo } from "../time";
+import { firstLine, Highlight } from "../ui";
 
 export function Dashboard() {
   const [projects, setProjects] = useState<ProjectListing[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [hits, setHits] = useState<SearchHit[]>([]);
 
   useEffect(() => {
     api.listProjects().then(setProjects, (e) => setError(e.message));
   }, []);
 
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      setHits([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      api.search(q).then(setHits, () => setHits([]));
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   if (error) return <div className="page"><p className="error">{error}</p></div>;
   if (!projects) return <div className="page" />;
 
+  const q = query.trim().toLowerCase();
   const active = projects
     .filter((project) => !project.archived)
+    .filter((project) => !q || project.name.toLowerCase().includes(q))
     .sort((a, b) => {
       const lastA = a.lastBriefing?.writtenAt ?? a.createdAt;
       const lastB = b.lastBriefing?.writtenAt ?? b.createdAt;
       return lastA.localeCompare(lastB); // longest away first
     });
+  const searching = q !== "";
+  const anyProjects = projects.some((project) => !project.archived);
 
   return (
     <div className="page">
@@ -30,7 +49,7 @@ export function Dashboard() {
         <p className="tagline">Come back to a letter, not a pile.</p>
       </header>
 
-      {active.length === 0 ? (
+      {!anyProjects ? (
         <section className="first-run">
           <p>
             Every time you step away from a project, Re-entry walks you through
@@ -48,34 +67,73 @@ export function Dashboard() {
         </section>
       ) : (
         <>
+          <input
+            className="search"
+            type="search"
+            placeholder="Search projects and letters…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+
           <div className="list-header">
             <h2 className="list-title">Your projects</h2>
             <a className="button" href="#/new">
               New project
             </a>
           </div>
-          <ul className="project-list">
-            {active.map((project) => (
-              <li key={project.slug}>
-                <a
-                  className="project-card"
-                  href={`#/p/${encodeURIComponent(project.slug)}`}
-                >
-                  <div className="project-card-top">
-                    <span className="project-name">{project.name}</span>
-                    <span className="away-badge">
-                      away {awayFor(project.lastBriefing?.writtenAt ?? project.createdAt)}
-                    </span>
-                  </div>
-                  <p className="project-teaser">
-                    {project.lastBriefing
-                      ? `Next: ${firstLine(project.lastBriefing.nextMove)}`
-                      : "No letters yet — step away well to write the first one."}
-                  </p>
-                </a>
-              </li>
-            ))}
-          </ul>
+          {active.length === 0 ? (
+            <p className="empty-note">No project names match “{query.trim()}”.</p>
+          ) : (
+            <ul className="project-list">
+              {active.map((project) => (
+                <li key={project.slug}>
+                  <a
+                    className="project-card"
+                    href={`#/p/${encodeURIComponent(project.slug)}`}
+                  >
+                    <div className="project-card-top">
+                      <span className="project-name">{project.name}</span>
+                      <span className="away-badge">
+                        away {awayFor(project.lastBriefing?.writtenAt ?? project.createdAt)}
+                      </span>
+                    </div>
+                    <p className="project-teaser">
+                      {project.lastBriefing
+                        ? `Next: ${firstLine(project.lastBriefing.nextMove)}`
+                        : "No letters yet — step away well to write the first one."}
+                    </p>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {searching && hits.length > 0 && (
+            <section className="hits">
+              <h2 className="list-title">In your letters</h2>
+              <ul>
+                {hits.map((hit) => (
+                  <li key={`${hit.slug}/${hit.briefingId}/${hit.section}`}>
+                    <a
+                      className="hit"
+                      href={`#/p/${encodeURIComponent(hit.slug)}/b/${encodeURIComponent(hit.briefingId)}`}
+                    >
+                      <span className="hit-meta">
+                        {hit.projectName} · {SECTION_TITLES[hit.section]} ·{" "}
+                        {writtenAgo(hit.writtenAt)}
+                      </span>
+                      <span className="hit-snippet">
+                        <Highlight text={hit.snippet} query={query} />
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {searching && hits.length === 0 && active.length > 0 && (
+            <p className="empty-note">Nothing in the letters themselves.</p>
+          )}
         </>
       )}
     </div>

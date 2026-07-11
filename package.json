@@ -1,7 +1,7 @@
 {
   "name": "re-entry",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Leave a project well. Come back to a letter, not a pile.",
   "type": "module",
   "engines": {
@@ -15,6 +15,7 @@
     "build": "tsc --noEmit && vite build",
     "start": "tsx server/index.ts",
     "test": "node --test",
+    "test:e2e": "node tests/e2e.mjs",
     "reentry": "node cli/reentry.ts"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "concurrently": "^10.0.3",
+    "puppeteer-core": "^25.3.0",
     "tsx": "^4.23.0",
     "typescript": "^7.0.2",
     "vite": "^8.1.4"

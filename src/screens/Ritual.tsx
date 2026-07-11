@@ -103,8 +103,9 @@ export function Ritual({ slug }: { slug: string }) {
     }
   }, [draftKey, step, answers]);
 
-  const current = STEPS[step];
-  const value = answers[current?.key] ?? "";
+  const isReview = step === STEPS.length;
+  const current = STEPS[Math.min(step, STEPS.length - 1)];
+  const value = answers[current.key] ?? "";
 
   async function seal(finalAnswers: Record<string, string>) {
     try {
@@ -128,19 +129,36 @@ export function Ritual({ slug }: { slug: string }) {
       setNudge(true);
       return;
     }
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
-    } else {
-      void seal(answers);
-    }
+    setStep(step + 1); // past the last question lands on the review
   }
+
+  // Keyboard for the review screen: Enter seals, Esc goes back.
+  useEffect(() => {
+    if (!isReview || sealed) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.target instanceof HTMLTextAreaElement) return;
+      if (event.key === "Enter") {
+        event.preventDefault();
+        void seal(answers);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        setStep(STEPS.length - 1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
+      // Don't let this same keystroke reach the review screen's window
+      // listener the moment it mounts — it would seal the letter instantly.
+      event.stopPropagation();
       advance();
     } else if (event.key === "Escape" && step > 0) {
       event.preventDefault();
+      event.stopPropagation();
       setStep(step - 1);
     }
   }
@@ -152,6 +170,49 @@ export function Ritual({ slug }: { slug: string }) {
         <h1 className="seal-title">Letter sealed.</h1>
         <p className="seal-sub">See you when you get back.</p>
         <a className="button" href="#/">Back to your projects</a>
+      </div>
+    );
+  }
+
+  if (isReview) {
+    return (
+      <div className="page ritual">
+        <a className="back" href={`#/p/${encodeURIComponent(slug)}`}>
+          ← Never mind, I'm staying
+        </a>
+        <div className="ritual-body">
+          <h1 className="ritual-prompt">Read it back.</h1>
+          <p className="ritual-hint">
+            Click any part to change it. This is what future-you receives.
+          </p>
+          <div className="review">
+            {STEPS.map((s, i) => {
+              const answer = (answers[s.key] ?? "").trim();
+              if (!answer) return null;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  className="review-item"
+                  onClick={() => setStep(i)}
+                >
+                  <span className="review-label">{s.prompt}</span>
+                  <span className="review-answer">{answer}</span>
+                </button>
+              );
+            })}
+          </div>
+          {error && <p className="error">{error}</p>}
+          <div className="review-actions">
+            <button className="button primary" onClick={() => void seal(answers)}>
+              Seal the letter
+            </button>
+            <div className="ritual-keys">
+              <span><kbd>Enter</kbd> seal</span>
+              <span><kbd>Esc</kbd> back</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -200,7 +261,7 @@ export function Ritual({ slug }: { slug: string }) {
         {error && <p className="error">{error}</p>}
 
         <div className="ritual-keys">
-          <span><kbd>Enter</kbd> {step === STEPS.length - 1 ? "seal the letter" : "next"}</span>
+          <span><kbd>Enter</kbd> {step === STEPS.length - 1 ? "read it back" : "next"}</span>
           <span><kbd>Shift</kbd>+<kbd>Enter</kbd> new line</span>
           {step > 0 && <span><kbd>Esc</kbd> back</span>}
         </div>

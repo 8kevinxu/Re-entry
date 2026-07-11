@@ -3,10 +3,12 @@ import type { BriefingSections, ProjectLink } from "../shared/types.ts";
 import {
   createBriefing,
   createProject,
+  deleteBriefing,
   getProject,
   listBriefings,
   listProjects,
   readBriefing,
+  searchBriefings,
   updateProject,
 } from "./store.ts";
 
@@ -39,6 +41,10 @@ api.get("/projects", (_req, res) => {
     };
   });
   res.json(projects);
+});
+
+api.get("/search", (req, res) => {
+  res.json(searchBriefings(String(req.query.q ?? "")));
 });
 
 api.post("/projects", (req, res) => {
@@ -98,6 +104,14 @@ api.post("/projects/:slug/briefings", (req, res) => {
     return;
   }
   res.status(201).json(createBriefing(project.slug, sections));
+});
+
+api.delete("/projects/:slug/briefings/:id", (req, res) => {
+  if (!getProject(req.params.slug) || !deleteBriefing(req.params.slug, req.params.id)) {
+    res.status(404).json({ error: "No such briefing." });
+    return;
+  }
+  res.json({ ok: true });
 });
 
 api.get("/projects/:slug/briefings/:id", (req, res) => {

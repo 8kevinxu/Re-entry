@@ -34,6 +34,16 @@ export interface BriefingSummary {
   writtenAt: string;
 }
 
+/** One full-text search match inside a briefing section. */
+export interface SearchHit {
+  slug: string;
+  projectName: string;
+  briefingId: string;
+  writtenAt: string;
+  section: keyof BriefingSections;
+  snippet: string;
+}
+
 /** Dashboard listing: project plus a glimpse of its latest briefing. */
 export interface ProjectListing extends Project {
   lastBriefing: { id: string; writtenAt: string; nextMove: string } | null;

@@ -35,6 +35,21 @@ export function Prose({ text }: { text: string }) {
   );
 }
 
+/** Wrap case-insensitive matches of `query` in <mark>. */
+export function Highlight({ text, query }: { text: string; query: string }) {
+  const q = query.trim();
+  if (!q) return <>{text}</>;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "ig"));
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>
+      )}
+    </>
+  );
+}
+
 export function firstLine(text: string): string {
   return text.split("\n").find((line) => line.trim() !== "")?.trim() ?? "";
 }

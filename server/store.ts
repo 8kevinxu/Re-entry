@@ -10,6 +10,7 @@ import {
   type BriefingSummary,
   type Project,
   type ProjectLink,
+  type SearchHit,
 } from "../shared/types.ts";
 
 export function dataDir(): string {
@@ -167,6 +168,52 @@ export function readBriefing(slug: string, id: string): Briefing | null {
   flush();
 
   return { id, writtenAt, sections };
+}
+
+export function deleteBriefing(slug: string, id: string): boolean {
+  if (!/^[\w.-]+$/.test(id)) return false;
+  const file = path.join(briefingsDir(slug), `${id}.md`);
+  if (!fs.existsSync(file)) return false;
+  fs.unlinkSync(file);
+  return true;
+}
+
+function makeSnippet(content: string, at: number, matchLength: number): string {
+  const start = Math.max(0, at - 60);
+  const end = Math.min(content.length, at + matchLength + 60);
+  const body = content.slice(start, end).replace(/\s+/g, " ").trim();
+  return `${start > 0 ? "…" : ""}${body}${end < content.length ? "…" : ""}`;
+}
+
+/** Case-insensitive full-text search across every letter, newest first. */
+export function searchBriefings(query: string, limit = 50): SearchHit[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const hits: SearchHit[] = [];
+  for (const project of listProjects()) {
+    for (const summary of listBriefings(project.slug)) {
+      const briefing = readBriefing(project.slug, summary.id);
+      if (!briefing) continue;
+      for (const key of SECTION_ORDER) {
+        const content = briefing.sections[key];
+        if (!content) continue;
+        const at = content.toLowerCase().indexOf(q);
+        if (at === -1) continue;
+        hits.push({
+          slug: project.slug,
+          projectName: project.name,
+          briefingId: briefing.id,
+          writtenAt: briefing.writtenAt,
+          section: key,
+          snippet: makeSnippet(content, at, q.length),
+        });
+        break; // one hit per letter keeps the list scannable
+      }
+    }
+  }
+  return hits
+    .sort((a, b) => b.writtenAt.localeCompare(a.writtenAt))
+    .slice(0, limit);
 }
 
 /** Git state of any local-path pile links, one line per repo. "" if none. */

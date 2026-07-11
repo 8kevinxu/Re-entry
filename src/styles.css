@@ -80,6 +80,60 @@ a {
   font-size: 1.05rem;
 }
 
+.search {
+  margin-bottom: 1.6rem;
+  padding: 0.65rem 0.9rem;
+}
+
+.empty-note {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.hits {
+  margin-top: 2.2rem;
+}
+
+.hits ul {
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+}
+
+.hit {
+  display: block;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+}
+
+.hit:hover .hit-meta {
+  color: var(--accent);
+}
+
+.hit-meta {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.hit-snippet {
+  font-family: var(--serif);
+  font-size: 0.98rem;
+}
+
+mark {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 3px;
+  padding: 0 0.1em;
+}
+
 .list-header {
   display: flex;
   align-items: baseline;
@@ -565,6 +619,54 @@ kbd {
   border-radius: 5px;
   padding: 0.05rem 0.4rem;
   background: var(--surface);
+}
+
+.review {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1.6rem;
+}
+
+.review-item {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+
+.review-item:hover {
+  border-color: var(--accent);
+}
+
+.review-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.review-answer {
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  white-space: pre-wrap;
+}
+
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+.review-actions .ritual-keys {
+  margin-top: 0;
 }
 
 /* --- Sealed --------------------------------------------------------------- */
