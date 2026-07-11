@@ -2,6 +2,11 @@
 
 **Come back to a letter, not a pile.**
 
+<p align="center">
+  <img src="docs/dashboard-light.png" alt="The dashboard: projects sorted by how long you've been away" width="49%" />
+  <img src="docs/letter-dark.png" alt="A letter from past-you: next move front and center, dark theme" width="49%" />
+</p>
+
 Re-entry is a small local tool for the cold-start problem: returning to a
 project after days, weeks, or months away. The pile of files and notes is all
 still there — but *you* aren't. The context that made it navigable lived in
@@ -67,6 +72,7 @@ TypeScript natively):
 npm run reentry                        # list projects by time away
 npm run reentry -- back [project]     # read the latest letter
 npm run reentry -- leave [project]    # write one — six questions
+npm run reentry -- thread [project]   # the whole correspondence, oldest first
 npm run reentry -- find <words>       # search every letter
 npm run reentry -- new <name>         # start a new project
 npm run reentry -- hook [project]     # nudge after `git push` (see below)

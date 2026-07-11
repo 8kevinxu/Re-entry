@@ -37,6 +37,42 @@ export function navigate(path: string) {
   window.location.hash = path;
 }
 
+type Theme = "light" | "dark";
+
+function currentTheme(): Theme {
+  const stored = localStorage.getItem("reentry-theme");
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState<Theme>(currentTheme);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
+
+  function toggle() {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    localStorage.setItem("reentry-theme", next);
+    setTheme(next);
+  }
+
+  return (
+    <button
+      className="theme-toggle"
+      onClick={toggle}
+      title={theme === "dark" ? "Lights on" : "Lights off"}
+      aria-label="Toggle color theme"
+    >
+      {theme === "dark" ? "☀" : "☾"}
+    </button>
+  );
+}
+
 export function App() {
   const [route, setRoute] = useState<Route>(parseRoute);
 
@@ -49,18 +85,31 @@ export function App() {
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
 
+  let screen;
   switch (route.screen) {
     case "new":
-      return <NewProject />;
+      screen = <NewProject />;
+      break;
     case "project":
-      return <Letter slug={route.slug} briefingId={route.briefingId} />;
+      screen = <Letter slug={route.slug} briefingId={route.briefingId} />;
+      break;
     case "ritual":
-      return <Ritual slug={route.slug} />;
+      screen = <Ritual slug={route.slug} />;
+      break;
     case "edit":
-      return <EditProject slug={route.slug} />;
+      screen = <EditProject slug={route.slug} />;
+      break;
     case "thread":
-      return <Thread slug={route.slug} />;
+      screen = <Thread slug={route.slug} />;
+      break;
     default:
-      return <Dashboard />;
+      screen = <Dashboard />;
   }
+
+  return (
+    <>
+      <ThemeToggle />
+      {screen}
+    </>
+  );
 }

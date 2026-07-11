@@ -22,7 +22,7 @@ import {
   readBriefing,
   searchBriefings,
 } from "../server/store.ts";
-import { awayFor, writtenAgo } from "../src/time.ts";
+import { awayFor, spanBetween, writtenAgo } from "../src/time.ts";
 
 const useColor = process.stdout.isTTY && !process.env.NO_COLOR;
 const style = (code: string, text: string) =>
@@ -257,6 +257,34 @@ async function leave(query: string): Promise<void> {
   console.log();
 }
 
+function thread(query: string): void {
+  const project = resolve(query);
+  const letters = listBriefings(project.slug)
+    .map((summary) => readBriefing(project.slug, summary.id))
+    .filter((briefing) => briefing !== null)
+    .reverse();
+  if (letters.length === 0) {
+    console.log(`No letters for ${project.name} yet.`);
+    return;
+  }
+  console.log();
+  console.log(`  ${bold(project.name)} ${dim(`— the whole correspondence, oldest first`)}`);
+  for (const [i, briefing] of letters.entries()) {
+    console.log();
+    if (i > 0) {
+      console.log(dim(italic(`      · ${spanBetween(letters[i - 1].writtenAt, briefing.writtenAt)} ·`)));
+      console.log();
+    }
+    console.log(dim(`  ${writtenAgo(briefing.writtenAt)}`));
+    console.log(accent(`  → ${briefing.sections.nextMove.split("\n")[0]}`));
+    console.log(indent(indent(briefing.sections.standNow)));
+    if (briefing.sections.openQuestions) {
+      console.log(dim(indent(indent(`? ${briefing.sections.openQuestions.split("\n")[0]}`))));
+    }
+  }
+  console.log();
+}
+
 function find(query: string): void {
   const hits = searchBriefings(query);
   if (hits.length === 0) {
@@ -348,6 +376,7 @@ function help(): void {
   reentry                  list projects by time away
   reentry back [project]   read the latest letter
   reentry leave [project]  write one — six questions, sixty seconds
+  reentry thread [project] the whole correspondence, oldest first
   reentry find <words>     search every letter
   reentry new <name>       start a new project
   reentry hook [project]   nudge after \`git push\` in the project's repos
@@ -379,6 +408,9 @@ switch (command) {
     break;
   case "nudge":
     nudge(args[0] ?? "");
+    break;
+  case "thread":
+    thread(args.join(" "));
     break;
   case "find":
     if (!args[0]) {

@@ -173,6 +173,16 @@ try {
   );
   check('"/" focuses the search box', focused.includes("search"));
 
+  // --- 9. Theme toggle flips and persists -------------------------------------
+  const bg = () =>
+    page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const before = await bg();
+  await page.click(".theme-toggle");
+  const after = await bg();
+  check("theme toggle changes the palette", before !== after);
+  await page.reload({ waitUntil: "networkidle0" });
+  check("chosen theme survives a reload", (await bg()) === after);
+
   await browser.close();
 } finally {
   server.kill();
