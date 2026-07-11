@@ -41,6 +41,28 @@ For development (Vite dev server with hot reload + API):
 npm run dev      # → http://localhost:5173
 ```
 
+## The CLI
+
+The same letters, without leaving the terminal (needs Node 23.6+, which runs
+TypeScript natively):
+
+```sh
+npm run reentry                        # list projects by time away
+npm run reentry -- back <project>     # read the latest letter
+npm run reentry -- leave <project>    # write one — six questions
+npm run reentry -- new <name>         # start a new project
+```
+
+Or `npm link` once, and it's just `reentry`, `reentry back hoopmap`, etc.
+Projects match by slug or any part of the name. The CLI and the web app share
+the same files, so use whichever is closer at hand.
+
+## Tests
+
+```sh
+npm test         # node:test suite over the storage layer and time phrasing
+```
+
 ## Your data
 
 No accounts, no cloud, no database. Everything is plain, human-readable files

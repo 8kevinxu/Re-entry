@@ -3,7 +3,7 @@ import type { Briefing, ProjectDetail } from "../../shared/types";
 import { api } from "../api";
 import { navigate } from "../App";
 import { longDate, writtenAgo } from "../time";
-import { Prose } from "../ui";
+import { PileLink, Prose } from "../ui";
 
 export function Letter({
   slug,
@@ -60,9 +60,7 @@ export function Letter({
         <nav className="pile">
           <span className="pile-label">The pile:</span>
           {project.links.map((link, i) => (
-            <a key={i} href={link.url} target="_blank" rel="noreferrer">
-              {link.label}
-            </a>
+            <PileLink key={i} link={link} />
           ))}
         </nav>
       )}

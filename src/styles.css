@@ -314,6 +314,17 @@ textarea:focus {
   color: var(--muted);
 }
 
+.pile-path {
+  font: inherit;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
 .letter {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -368,6 +379,21 @@ textarea:focus {
 .next-move-body p:last-child,
 .letter-section p:last-child {
   margin-bottom: 0;
+}
+
+.next-move-body ul,
+.letter-section ul {
+  margin: 0 0 0.8em;
+  padding-left: 1.3em;
+}
+
+.next-move-body ul:last-child,
+.letter-section ul:last-child {
+  margin-bottom: 0;
+}
+
+.letter-section li {
+  margin-bottom: 0.25em;
 }
 
 .letter-section {
@@ -477,6 +503,13 @@ textarea:focus {
 .ritual-hint {
   color: var(--muted);
   margin: 0 0 1.4rem;
+}
+
+.draft-note {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0 0 0.6rem;
 }
 
 .ritual textarea {

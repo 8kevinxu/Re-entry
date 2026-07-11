@@ -6,7 +6,7 @@ export function awayFor(iso: string): string {
   if (minutes < 60) return `${minutes} minutes`;
   const hours = Math.floor(minutes / 60);
   if (hours < 2) return "an hour";
-  if (hours < 36) return `${hours} hours`;
+  if (hours < 22) return `${hours} hours`;
   const days = Math.round(hours / 24);
   if (days < 2) return "a day";
   if (days < 14) return `${days} days`;

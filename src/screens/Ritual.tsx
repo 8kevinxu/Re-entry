@@ -51,9 +51,31 @@ const STEPS: Step[] = [
 
 const RITUAL_SECONDS = 60;
 
+interface Draft {
+  step: number;
+  answers: Record<string, string>;
+}
+
+function loadDraft(key: string): Draft | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    if (typeof draft.step !== "number" || typeof draft.answers !== "object")
+      return null;
+    return draft;
+  } catch {
+    return null;
+  }
+}
+
 export function Ritual({ slug }: { slug: string }) {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const draftKey = `reentry:draft:${slug}`;
+  const [draft] = useState(() => loadDraft(draftKey));
+  const [step, setStep] = useState(draft?.step ?? 0);
+  const [answers, setAnswers] = useState<Record<string, string>>(
+    draft?.answers ?? {}
+  );
   const [nudge, setNudge] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sealed, setSealed] = useState(false);
@@ -74,6 +96,13 @@ export function Ritual({ slug }: { slug: string }) {
     setNudge(false);
   }, [step]);
 
+  // Keep an unsent draft around so a stray navigation or reload loses nothing.
+  useEffect(() => {
+    if (Object.values(answers).some((a) => a.trim() !== "")) {
+      localStorage.setItem(draftKey, JSON.stringify({ step, answers }));
+    }
+  }, [draftKey, step, answers]);
+
   const current = STEPS[step];
   const value = answers[current?.key] ?? "";
 
@@ -87,6 +116,7 @@ export function Ritual({ slug }: { slug: string }) {
         ignore: finalAnswers.ignore ?? "",
         letter: finalAnswers.letter ?? "",
       });
+      localStorage.removeItem(draftKey);
       setSealed(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -146,6 +176,9 @@ export function Ritual({ slug }: { slug: string }) {
           ))}
         </div>
 
+        {draft && step === draft.step && (
+          <p className="draft-note">Picked up where you left off.</p>
+        )}
         <h1 className="ritual-prompt">{current.prompt}</h1>
         <p className="ritual-hint">
           {current.hint}

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { BriefingSections, ProjectLink } from "../shared/types";
+import type { BriefingSections, ProjectLink } from "../shared/types.ts";
 import {
   createBriefing,
   createProject,
@@ -8,7 +8,7 @@ import {
   listProjects,
   readBriefing,
   updateProject,
-} from "./store";
+} from "./store.ts";
 
 function cleanLinks(input: unknown): ProjectLink[] {
   if (!Array.isArray(input)) return [];

@@ -9,7 +9,7 @@ import {
   type BriefingSummary,
   type Project,
   type ProjectLink,
-} from "../shared/types";
+} from "../shared/types.ts";
 
 export function dataDir(): string {
   return process.env.RE_ENTRY_HOME || path.join(os.homedir(), ".re-entry");
@@ -141,17 +141,29 @@ export function readBriefing(slug: string, id: string): Briefing | null {
     if (line) writtenAt = line[1].trim();
   }
 
+  // Walk line by line, starting a new section only on a heading that exactly
+  // matches one of the known titles — so user text that happens to contain
+  // "## something" survives a round-trip.
   const titleToKey = new Map(
-    SECTION_ORDER.map((key) => [SECTION_TITLES[key], key])
+    SECTION_ORDER.map((key) => [`## ${SECTION_TITLES[key]}`, key])
   );
   const sections: BriefingSections = { standNow: "", nextMove: "" };
-  for (const chunk of body.split(/^## /m).slice(1)) {
-    const newline = chunk.indexOf("\n");
-    const title = (newline === -1 ? chunk : chunk.slice(0, newline)).trim();
-    const content = (newline === -1 ? "" : chunk.slice(newline + 1)).trim();
-    const key = titleToKey.get(title);
-    if (key) sections[key] = content;
+  let currentKey: keyof BriefingSections | null = null;
+  let lines: string[] = [];
+  const flush = () => {
+    if (currentKey) sections[currentKey] = lines.join("\n").trim();
+  };
+  for (const line of body.split("\n")) {
+    const key = titleToKey.get(line.trim());
+    if (key) {
+      flush();
+      currentKey = key;
+      lines = [];
+    } else {
+      lines.push(line);
+    }
   }
+  flush();
 
   return { id, writtenAt, sections };
 }
