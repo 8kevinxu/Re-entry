@@ -115,15 +115,18 @@ try {
 
   // --- 5. New letter is latest; deleting it falls back to the previous --------
   await page.goto(`${BASE}/#/p/dogfood`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".next-move-body", { timeout: 5000 });
   const next = await page.$eval(".next-move-body", (el) => el.textContent);
   check("sealed letter is the new latest", next.includes("Seal via the review screen"));
   await page.evaluate(() => {
     const buttons = [...document.querySelectorAll(".project-footer button")];
     buttons.find((b) => b.textContent.includes("Delete this letter")).click();
   });
-  await pause(600);
-  const nextAfter = await page.$eval(".next-move-body", (el) => el.textContent);
-  check("deleting the latest falls back to the previous letter", nextAfter.includes("Verify the P.S."));
+  await page.waitForFunction(
+    () => document.querySelector(".next-move-body")?.textContent.includes("Verify the P.S."),
+    { timeout: 5000 }
+  );
+  check("deleting the latest falls back to the previous letter", true);
 
   // --- 6. Edit project: rename and grow the pile ------------------------------
   await page.goto(`${BASE}/#/p/dogfood/edit`, { waitUntil: "networkidle0" });
@@ -136,7 +139,7 @@ try {
   await page.type(".link-row input:first-child", "Docs");
   await page.type(".link-row input:last-child", "https://example.com/docs");
   await page.click(".button.primary");
-  await page.waitForSelector(".pile a", { timeout: 3000 });
+  await page.waitForSelector(".pile a", { timeout: 5000 });
   const pileLink = await page.$eval(".pile a", (el) => el.textContent);
   const title = await page.$eval(".screen-title", (el) => el.textContent);
   check("edit saves a new name", title === "Dogfood Renamed");
@@ -167,6 +170,7 @@ try {
 
   // --- 8. "/" focuses dashboard search ----------------------------------------
   await page.goto(`${BASE}/#/`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".search", { timeout: 5000 });
   await page.keyboard.press("/");
   const focused = await page.evaluate(
     () => document.activeElement?.className ?? ""
@@ -189,9 +193,10 @@ try {
   await page.waitForSelector(".trash", { timeout: 3000 });
   await page.click(".trash summary");
   await page.click(".trash-row button");
-  await pause(400);
-  const trashGone = await page.$(".trash");
-  check("restoring from trash empties the section", trashGone === null);
+  await page.waitForFunction(() => !document.querySelector(".trash"), {
+    timeout: 5000,
+  });
+  check("restoring from trash empties the section", true);
   await page.goto(`${BASE}/#/p/dogfood/thread`, { waitUntil: "networkidle0" });
   await page.waitForSelector(".thread-letter");
   const threadNexts = await page.$$eval(".next-move-body", (els) =>
@@ -221,6 +226,7 @@ try {
   });
   await pause(500);
   await page.goto(`${BASE}/#/`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".project-name", { timeout: 5000 });
   const activeNames = await page.$$eval(".project-name", (els) =>
     els.map((el) => el.textContent)
   );
