@@ -60,4 +60,14 @@ export const api = {
 
   search: (query: string) =>
     request<SearchHit[]>(`/search?q=${encodeURIComponent(query)}`),
+
+  listTrash: () =>
+    request<
+      { file: string; slug: string; id: string; writtenAt: string; projectName: string }[]
+    >("/trash"),
+
+  restoreLetter: (file: string) =>
+    request<{ ok: boolean }>(`/trash/${encodeURIComponent(file)}/restore`, {
+      method: "POST",
+    }),
 };

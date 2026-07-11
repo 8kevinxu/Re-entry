@@ -7,7 +7,9 @@ import {
   getProject,
   listBriefings,
   listProjects,
+  listTrash,
   readBriefing,
+  restoreBriefing,
   searchBriefings,
   updateProject,
 } from "./store.ts";
@@ -45,6 +47,24 @@ api.get("/projects", (_req, res) => {
 
 api.get("/search", (req, res) => {
   res.json(searchBriefings(String(req.query.q ?? "")));
+});
+
+api.get("/trash", (_req, res) => {
+  const names = new Map(listProjects().map((p) => [p.slug, p.name]));
+  res.json(
+    listTrash().map((entry) => ({
+      ...entry,
+      projectName: names.get(entry.slug) ?? entry.slug,
+    }))
+  );
+});
+
+api.post("/trash/:file/restore", (req, res) => {
+  if (!restoreBriefing(req.params.file)) {
+    res.status(404).json({ error: "Can't restore that letter." });
+    return;
+  }
+  res.json({ ok: true });
 });
 
 api.post("/projects", (req, res) => {

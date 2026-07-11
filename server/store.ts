@@ -229,6 +229,45 @@ export function deleteBriefing(slug: string, id: string): boolean {
   return true;
 }
 
+export interface TrashedLetter {
+  file: string;
+  slug: string;
+  id: string;
+  writtenAt: string;
+}
+
+export function listTrash(): TrashedLetter[] {
+  const trash = path.join(dataDir(), "trash");
+  if (!fs.existsSync(trash)) return [];
+  return fs
+    .readdirSync(trash)
+    .filter((name) => /^[\w.-]+--[\w.-]+\.md$/.test(name))
+    .map((name) => {
+      const [slug, id] = name.replace(/\.md$/, "").split("--");
+      const text = fs.readFileSync(path.join(trash, name), "utf8");
+      const line = text.match(/^writtenAt:\s*(.+)$/m);
+      return {
+        file: name,
+        slug,
+        id,
+        writtenAt: line ? line[1].trim() : new Date(0).toISOString(),
+      };
+    })
+    .sort((a, b) => b.writtenAt.localeCompare(a.writtenAt));
+}
+
+/** Put a trashed letter back where it came from. */
+export function restoreBriefing(file: string): boolean {
+  if (!/^[\w.-]+--[\w.-]+\.md$/.test(file)) return false;
+  const source = path.join(dataDir(), "trash", file);
+  if (!fs.existsSync(source)) return false;
+  const [slug, id] = file.replace(/\.md$/, "").split("--");
+  if (!getProject(slug)) return false;
+  fs.mkdirSync(briefingsDir(slug), { recursive: true });
+  fs.renameSync(source, path.join(briefingsDir(slug), `${id}.md`));
+  return true;
+}
+
 function makeSnippet(content: string, at: number, matchLength: number): string {
   const start = Math.max(0, at - 60);
   const end = Math.min(content.length, at + matchLength + 60);

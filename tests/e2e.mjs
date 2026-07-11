@@ -183,6 +183,26 @@ try {
   await page.reload({ waitUntil: "networkidle0" });
   check("chosen theme survives a reload", (await bg()) === after);
 
+  // --- 9b. Trash restore ---------------------------------------------------------
+  // Step 5 moved a letter to the trash; bring it back from the dashboard.
+  await page.goto(`${BASE}/#/`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".trash", { timeout: 3000 });
+  await page.click(".trash summary");
+  await page.click(".trash-row button");
+  await pause(400);
+  const trashGone = await page.$(".trash");
+  check("restoring from trash empties the section", trashGone === null);
+  await page.goto(`${BASE}/#/p/dogfood/thread`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".thread-letter");
+  const threadNexts = await page.$$eval(".next-move-body", (els) =>
+    els.map((el) => el.textContent)
+  );
+  check(
+    "restored letter rejoins the correspondence",
+    threadNexts.length === 3 &&
+      threadNexts.some((t) => t.includes("Seal via the review screen"))
+  );
+
   // --- 10. Archive round-trip ---------------------------------------------------
   await page.goto(`${BASE}/#/p/dogfood`, { waitUntil: "networkidle0" });
   await page.evaluate(() => {

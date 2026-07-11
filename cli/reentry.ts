@@ -3,7 +3,8 @@
 // Runs on plain Node ≥ 23.6 (native type stripping). Data: ~/.re-entry.
 
 import readline from "node:readline";
-import { spawn } from "node:child_process";
+import fs from "node:fs";
+import { execFileSync, spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { installNudge, isGitRepo, uninstallNudge } from "./hook.ts";
@@ -353,6 +354,44 @@ function nudge(slug: string): void {
   );
 }
 
+/** Version the data dir with git; pull/push if a remote is configured. */
+function sync(): void {
+  const dir = dataDir();
+  const git = (...args: string[]) =>
+    execFileSync(
+      "git",
+      ["-C", dir, "-c", "user.name=re-entry", "-c", "user.email=reentry@localhost", ...args],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
+    ).trim();
+
+  if (!fs.existsSync(path.join(dir, ".git"))) {
+    git("init", "-q");
+    console.log(`Initialized a git repository in ${dir} — your letters are now versioned.`);
+    console.log(dim(`Add a private remote for off-machine backup:\n  git -C ${dir} remote add origin <url>`));
+  }
+
+  git("add", "-A");
+  if (git("status", "--porcelain") !== "") {
+    git("commit", "-q", "-m", `letters as of ${new Date().toISOString()}`);
+    console.log("Committed the latest letters.");
+  } else {
+    console.log("Nothing new to commit.");
+  }
+
+  const remotes = git("remote");
+  if (remotes.includes("origin")) {
+    try {
+      const branch = git("branch", "--show-current") || "main";
+      git("pull", "--rebase", "-q", "origin", branch);
+      git("push", "-q", "-u", "origin", branch);
+      console.log("Synced with origin.");
+    } catch (e) {
+      console.error(`Sync with origin failed: ${e instanceof Error ? e.message : e}`);
+      process.exit(1);
+    }
+  }
+}
+
 const PORT = Number(process.env.PORT || 1969);
 
 /** Open the web app (starting the server first if it isn't running). */
@@ -414,6 +453,7 @@ function help(): void {
   reentry find <words>     search every letter
   reentry new <name>       start a new project
   reentry open [project]   open the web app (starts the server if needed)
+  reentry sync             git-commit the letters; pull/push if origin is set
   reentry hook [project]   nudge after \`git push\` in the project's repos
   reentry unhook [project] remove the nudge
 
@@ -459,6 +499,9 @@ switch (command) {
     break;
   case "open":
     await open(args.join(" "));
+    break;
+  case "sync":
+    sync();
     break;
   case "help":
   case "--help":

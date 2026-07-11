@@ -5,16 +5,26 @@ import { api } from "../api";
 import { awayFor, writtenAgo } from "../time";
 import { firstLine, Highlight } from "../ui";
 
+type Trashed = Awaited<ReturnType<typeof api.listTrash>>[number];
+
 export function Dashboard() {
   const [projects, setProjects] = useState<ProjectListing[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
+  const [trash, setTrash] = useState<Trashed[]>([]);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api.listProjects().then(setProjects, (e) => setError(e.message));
+    api.listTrash().then(setTrash, () => setTrash([]));
   }, []);
+
+  async function restore(entry: Trashed) {
+    await api.restoreLetter(entry.file);
+    setTrash(trash.filter((t) => t.file !== entry.file));
+    api.listProjects().then(setProjects, () => {});
+  }
 
   // "/" focuses search, like everywhere else on the internet.
   useEffect(() => {
@@ -155,6 +165,28 @@ export function Dashboard() {
           )}
           {searching && hits.length === 0 && active.length > 0 && (
             <p className="empty-note">Nothing in the letters themselves.</p>
+          )}
+
+          {!searching && trash.length > 0 && (
+            <details className="archived trash">
+              <summary className="list-title">Trash ({trash.length})</summary>
+              <ul>
+                {trash.map((entry) => (
+                  <li key={entry.file} className="trash-row">
+                    <span>
+                      {entry.projectName}
+                      <span className="ago"> · {writtenAgo(entry.writtenAt)}</span>
+                    </span>
+                    <button
+                      className="button subtle"
+                      onClick={() => void restore(entry)}
+                    >
+                      Restore
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
 
           {!searching && projects.some((p) => p.archived) && (

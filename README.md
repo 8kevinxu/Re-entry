@@ -76,6 +76,7 @@ npm run reentry -- thread [project]   # the whole correspondence, oldest first
 npm run reentry -- find <words>       # search every letter
 npm run reentry -- new <name>         # start a new project
 npm run reentry -- open [project]     # jump to the web app (starts the server)
+npm run reentry -- sync               # git-commit your letters; push if origin set
 npm run reentry -- hook [project]     # nudge after `git push` (see below)
 npm run reentry -- unhook [project]   # remove the nudge
 ```
@@ -123,6 +124,11 @@ in `~/.re-entry/` (override with the `RE_ENTRY_HOME` environment variable):
 
 The briefings are ordinary markdown — readable, greppable, and yours, with or
 without the app.
+
+Nothing is ever destroyed: deleting a letter moves it to `trash/` (restorable
+from the dashboard), and `reentry sync` versions the whole directory with git
+— add a private remote and your letters survive the laptop too. Letters also
+print cleanly (⌘P on a letter page gives you just the letter, ink on paper).
 
 ## Why this exists
 

@@ -188,6 +188,27 @@ test("deleteBriefing moves the letter to the trash", () => {
   assert.ok(fs.readFileSync(trashed, "utf8").includes("## Where things stand"));
 });
 
+test("trash lists and restores deleted letters", () => {
+  const project = store.createProject("Restorable", []);
+  const created = store.createBriefing(project.slug, {
+    standNow: "precious words",
+    nextMove: "n",
+  });
+  store.deleteBriefing(project.slug, created.id);
+  const entry = store
+    .listTrash()
+    .find((t) => t.slug === project.slug && t.id === created.id);
+  assert.ok(entry);
+  assert.equal(entry.writtenAt, created.writtenAt);
+  assert.equal(store.restoreBriefing(entry.file), true);
+  assert.equal(
+    store.readBriefing(project.slug, created.id)?.sections.standNow,
+    "precious words"
+  );
+  assert.equal(store.restoreBriefing(entry.file), false);
+  assert.equal(store.restoreBriefing("../evil.md"), false);
+});
+
 test("deleteBriefing removes the file and nothing else", () => {
   const project = store.createProject("Deletable", []);
   const first = store.createBriefing(project.slug, { standNow: "1", nextMove: "1" });

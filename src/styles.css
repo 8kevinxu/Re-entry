@@ -826,6 +826,45 @@ kbd {
   margin: 0 0 2rem;
 }
 
+.trash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- Print: just the letter, in ink on paper ------------------------------- */
+
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --bg: #fff;
+    --surface: #fff;
+    --ink: #111;
+    --muted: #555;
+    --line: #ccc;
+    --accent: #7a2e23;
+    --accent-soft: transparent;
+    --shadow: none;
+  }
+
+  .theme-toggle,
+  .back,
+  .project-actions,
+  .project-footer,
+  .archive,
+  .search,
+  .pile {
+    display: none !important;
+  }
+
+  .letter {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-top: 1rem;
+  }
+}
+
 @media (max-width: 560px) {
   .letter {
     padding: 1.6rem 1.4rem;

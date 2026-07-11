@@ -1,7 +1,7 @@
 {
   "name": "re-entry",
   "private": true,
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Leave a project well. Come back to a letter, not a pile.",
   "type": "module",
   "engines": {
